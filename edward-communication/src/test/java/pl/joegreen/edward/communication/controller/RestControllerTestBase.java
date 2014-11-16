@@ -1,0 +1,102 @@
+package pl.joegreen.edward.communication.controller;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import javax.transaction.Transactional;
+
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+
+import pl.joegreen.edward.communication.configuration.SpringServletContextConfig;
+import pl.joegreen.edward.communication.configuration.TestDataSourceConfig;
+import pl.joegreen.edward.persistence.dao.ExecutionDao;
+import pl.joegreen.edward.persistence.dao.JobDao;
+import pl.joegreen.edward.persistence.dao.JsonDataDao;
+import pl.joegreen.edward.persistence.dao.ProjectDao;
+import pl.joegreen.edward.persistence.dao.TaskDao;
+import pl.joegreen.edward.persistence.dao.UserDao;
+import pl.joegreen.edward.persistence.dao.VolunteerDao;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@WebAppConfiguration
+@ContextConfiguration(classes = { SpringServletContextConfig.class,
+		TestDataSourceConfig.class, AddModelFixturesConfiguration.class })
+@TransactionConfiguration(defaultRollback = true)
+@Transactional
+@Ignore
+public class RestControllerTestBase {
+
+	@Autowired
+	protected WebApplicationContext WebApplicationContext;
+
+	@Autowired
+	protected ProjectDao projectDao;
+	@Autowired
+	protected JobDao jobDao;
+	@Autowired
+	protected JsonDataDao jsonDataDao;
+	@Autowired
+	protected TaskDao taskDao;
+	@Autowired
+	protected UserDao userDao;
+	@Autowired
+	protected ExecutionDao executionDao;
+
+	@Autowired
+	protected VolunteerDao volunteerDao;
+
+	@Autowired
+	protected ModelFixtures modelFixtures;
+
+	protected ObjectMapper mapper = new ObjectMapper();
+
+	protected MockMvc mockMvc;
+
+	protected final static MediaType JSON = MediaType.APPLICATION_JSON;
+
+	protected ResultMatcher OK = status().isOk();
+	protected ResultMatcher NOT_FOUND = status().isNotFound();
+	protected ResultMatcher BAD_REQUEST = status().isBadRequest();
+	protected ResultMatcher EMPTY_CONTENT = content().string("");
+
+	protected final static String DATA_URL = "/data";
+	protected final static String PROJECT_URL = "/project";
+	protected final static String JOB_URL = "/job";
+	protected final static String TASK_URL = "/task";
+
+	protected ResultMatcher contentEqualsByJson(Object object)
+			throws JsonProcessingException {
+		return content().string(mapper.writeValueAsString(object));
+	}
+
+	protected String idUrl(long id) {
+		return "/" + id;
+	}
+
+	protected String performGetAndReturnContent(String url) throws Exception {
+		return mockMvc.perform(get(url).accept(JSON)).andExpect(OK).andReturn()
+				.getResponse().getContentAsString();
+	}
+
+	@Before
+	public void setUp() {
+		mockMvc = MockMvcBuilders.webAppContextSetup(WebApplicationContext)
+				.build();
+	}
+
+}
