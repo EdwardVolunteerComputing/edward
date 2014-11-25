@@ -17,7 +17,8 @@ var BASE_API_URL = "../../"
 function createCodeMirror(parentNode, selector, options) {
     options = options || {isJson: false, isEditable: false}
     $(parentNode).find(selector).each(function (index, area) {
-        CodeMirror.fromTextArea(area, {readOnly: !options.isEditable, lineNumbers: true, mode: {name: "javascript", json: options.isJson}})
+        CodeMirror.fromTextArea(area,
+            {readOnly: !options.isEditable, lineNumbers: true, mode: {name: "javascript", json: options.isJson}})
     });
 }
 
@@ -137,10 +138,16 @@ var GenericList = React.createClass({
                 return ({markup}
                 )
             });
-            return (
-                <table className="table">
+            if (this.state.items.length > 0) {
+                return (
+                    <table className="table">
                         {markup}
-                </table>);
+                    </table>);
+            }else{
+                return (
+                    <div> No records to display. </div>
+                )
+            }
         }
     }
 
@@ -219,10 +226,7 @@ var executionsListRenderItem = function (item, props) {
         <CellWithItemId itemId={item.id}/>
         <td>
             <Link to="execution" params={{
-                projectId: props.params.projectId,
-                jobId: props.params.jobId,
-                taskId: item.taskId,
-                executionId: item.id
+                projectId: props.params.projectId, jobId: props.params.jobId, taskId: item.taskId, executionId: item.id
             }}> {item.status} </Link>
         </td>
         <td> {date.toLocaleDateString()} {date.toLocaleTimeString()}</td>
@@ -338,7 +342,7 @@ var ExecutionBox = React.createClass({
             return getData(execution.outputDataId).then(function (data) {
                 execution.result = data.data;
                 return execution;
-            }, function(){
+            }, function () {
                 return execution;
             })
         }).always(function () {
@@ -363,7 +367,7 @@ var ExecutionBox = React.createClass({
             ) : (<Waiting/>)
         );
     }, componentDidUpdate: function () {
-        createCodeMirror(this.getDOMNode(), "#dataArea",{isJson: true, isEditable: false});
+        createCodeMirror(this.getDOMNode(), "#dataArea", {isJson: true, isEditable: false});
     }
 });
 
