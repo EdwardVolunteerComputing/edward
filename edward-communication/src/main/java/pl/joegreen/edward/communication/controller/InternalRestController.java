@@ -35,6 +35,12 @@ public class InternalRestController extends RestControllerBase {
 		return getById(id, projectDao);
 	}
 
+	@RequestMapping(value = "project", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<Project> getAllProjects() {
+		return projectDao.getAll();
+	}
+
 	@RequestMapping(value = "project/{id}/jobs", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public List<Job> getJobsByProjectId(@PathVariable Long id) {
