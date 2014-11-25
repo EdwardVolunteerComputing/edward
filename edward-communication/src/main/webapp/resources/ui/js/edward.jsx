@@ -332,13 +332,17 @@ var TaskBox = React.createClass({
 var ExecutionBox = React.createClass({
     componentDidMount: function () {
         var that = this;
+        var newState = null;
         getExecution(this.props.params.executionId).then(function (execution) {
+            newState = execution;
             return getData(execution.outputDataId).then(function (data) {
                 execution.result = data.data;
                 return execution;
+            }, function(){
+                return execution;
             })
-        }).then(function (execution) {
-            that.setState(execution);
+        }).always(function () {
+            that.setState(newState);
         })
     }, render: function () {
         return (
