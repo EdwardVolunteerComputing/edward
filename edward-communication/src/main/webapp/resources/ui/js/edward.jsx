@@ -288,7 +288,7 @@ var JobBox = React.createClass({
             ) : (<Waiting/>)
         );
     }, componentDidUpdate: function () {
-        createCodeMirror(this.getDOMNode(), "#codeArea", {isJSON: false, isEditable: false});
+        createCodeMirror(this.getDOMNode(), "#codeArea", {isJson: false, isEditable: false});
     }
 });
 
@@ -324,7 +324,7 @@ var TaskBox = React.createClass({
             ) : (<Waiting/>)
         );
     }, componentDidUpdate: function () {
-        createCodeMirror(this.getDOMNode(), "#dataArea", {isJSON: true, isEditable: false});
+        createCodeMirror(this.getDOMNode(), "#dataArea", {isJson: true, isEditable: false});
     }
 });
 
@@ -359,7 +359,7 @@ var ExecutionBox = React.createClass({
             ) : (<Waiting/>)
         );
     }, componentDidUpdate: function () {
-        createCodeMirror(this.getDOMNode(), "#dataArea",{isJSON: true, isEditable: false});
+        createCodeMirror(this.getDOMNode(), "#dataArea",{isJson: true, isEditable: false});
     }
 });
 
