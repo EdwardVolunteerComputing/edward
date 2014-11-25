@@ -14,6 +14,13 @@ var PAGES = {
 
 var BASE_API_URL = "../../"
 
+function createCodeMirror(parentNode, selector, options) {
+    options = options || {isJson: false, isEditable: false}
+    $(parentNode).find(selector).each(function (index, area) {
+        CodeMirror.fromTextArea(area, {readOnly: !options.isEditable, lineNumbers: true, mode: {name: "javascript", json: options.isJson}})
+    });
+}
+
 
 var getProject = function (id) {
     return $.ajax({
@@ -210,7 +217,14 @@ var executionsListRenderItem = function (item, props) {
     date.setUTCMilliseconds(item.creationTime);
     return (<tr>
         <CellWithItemId itemId={item.id}/>
-        <td> <Link to="execution" params={{projectId:  props.params.projectId, jobId: props.params.jobId, taskId: item.taskId, executionId: item.id}}> {item.status} </Link></td>
+        <td>
+            <Link to="execution" params={{
+                projectId: props.params.projectId,
+                jobId: props.params.jobId,
+                taskId: item.taskId,
+                executionId: item.id
+            }}> {item.status} </Link>
+        </td>
         <td> {date.toLocaleDateString()} {date.toLocaleTimeString()}</td>
     </tr>);
 }
@@ -229,8 +243,8 @@ var ProjectBox = React.createClass({
                 <div className="form-group">
                     <label for="id">Id: </label>
                     <input disabled="true" type="text" id="id" name="id" value= {this.state.id} className="form-control"/>
-                    <label for="name">Name: </label>
-                    <input type="text" id="name" name="name" value={this.state.name} className="form-control"/>
+                    <label  for="name">Name: </label>
+                    <input disabled="true"  type="text" id="name" name="name" value={this.state.name} className="form-control"/>
                 </div>
                 <h2> Jobs </h2>
                 <GenericList getItemsFunction={jobsListGetItems} itemToMarkupFunction= {jobsListRenderItem} params={this.props.params}/>
@@ -260,7 +274,7 @@ var JobBox = React.createClass({
                     <label for="projectId">Project id: </label>
                     <input disabled="true" type="text" id="projectId" name="projectId" value= {this.state.projectId} className="form-control"/>
                     <label for="name">Name: </label>
-                    <input type="text" id="name" name="name" value={this.state.name} className="form-control"/>
+                    <input disabled="true"  type="text" id="name" name="name" value={this.state.name} className="form-control"/>
                 </div>
                 <h2> Tasks </h2>
                 <GenericList getItemsFunction={tasksListGetItems} itemToMarkupFunction={tasksListRenderItem} params={this.props.params}/>
@@ -274,9 +288,7 @@ var JobBox = React.createClass({
             ) : (<Waiting/>)
         );
     }, componentDidUpdate: function () {
-        $(this.getDOMNode()).find("#codeArea").each(function (index, area) {
-            CodeMirror.fromTextArea(area, { lineNumbers: true, mode: "javascript"})
-        });
+        createCodeMirror(this.getDOMNode(), "#codeArea", {isJSON: false, isEditable: false});
     }
 });
 
@@ -312,10 +324,7 @@ var TaskBox = React.createClass({
             ) : (<Waiting/>)
         );
     }, componentDidUpdate: function () {
-        $(this.getDOMNode()).find("#dataArea").each(function (index, area) {
-            CodeMirror.fromTextArea(area,
-                { lineNumbers: true, mode: {name: "javascript", json: true}})
-        });
+        createCodeMirror(this.getDOMNode(), "#dataArea", {isJSON: true, isEditable: false});
     }
 });
 
@@ -335,7 +344,7 @@ var ExecutionBox = React.createClass({
         return (
             this.state ? (<div>
                 <h1>
-                Task: {this.state.id}</h1>
+                Execution: {this.state.id}</h1>
                 <div className="form-group">
                     <label for="id">Id: </label>
                     <input disabled="true" type="text" id="id" name="id" value= {this.state.id} className="form-control"/>
@@ -350,10 +359,7 @@ var ExecutionBox = React.createClass({
             ) : (<Waiting/>)
         );
     }, componentDidUpdate: function () {
-        $(this.getDOMNode()).find("#dataArea").each(function (index, area) {
-            CodeMirror.fromTextArea(area,
-                { lineNumbers: true, mode: {name: "javascript", json: true}})
-        });
+        createCodeMirror(this.getDOMNode(), "#dataArea",{isJSON: true, isEditable: false});
     }
 });
 
