@@ -143,9 +143,9 @@ public class Charles {
 			ImmutableList<String> oldPopulations) throws RestException {
 		logger.info("Waiting for improved populations");
 		Map<Long, String> results = new HashMap<Long, String>();
-		long waitedTime = 0;
+		long waitingStartTime = System.currentTimeMillis();
 		while (results.size() < taskIdentifiers.size()
-				&& waitedTime < maxMetaIterationTimeMs) {
+				&& (System.currentTimeMillis() - waitingStartTime) < maxMetaIterationTimeMs) {
 			for (Long taskIdentifier : taskIdentifiers) {
 				if (!results.containsKey(taskIdentifier)) {
 					Optional<String> result = returnTaskResultIfDone(taskIdentifier);
@@ -160,7 +160,8 @@ public class Charles {
 		}
 		if (results.size() < taskIdentifiers.size()) {
 			logger.info("Lacking " + (taskIdentifiers.size() - results.size())
-					+ " improved populations after waiting " + waitedTime
+					+ " improved populations after waiting "
+					+ (System.currentTimeMillis() - waitingStartTime)
 					+ " ms. Using old populations instead.");
 			taskIdentifiers
 					.stream()
@@ -223,7 +224,7 @@ public class Charles {
 				"C:\\Users\\joegreen\\Desktop\\Uczelnia\\praca-magisterska\\charles\\iteratePopulation2.js",
 				"C:\\Users\\joegreen\\Desktop\\Uczelnia\\praca-magisterska\\charles\\migratePopulations.js",
 				"{\"number\":50, \"dimension\":6, \"range\":5.12}", true, true,
-				2, 2, 1000, 10000, "The Charles Evolution Project");
+				10, 5, 1000, 2000, "The Charles Evolution Project");
 		List<String> populations = charles.calculate();
 		for (int i = 0; i < populations.size(); ++i) {
 			System.out.println("--- Population " + i + " ---");
