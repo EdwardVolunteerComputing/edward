@@ -219,17 +219,20 @@ public class Charles {
 	}
 
 	public static void main(String[] args) throws IOException, RestException {
+		long startTime = System.currentTimeMillis();
 		Charles charles = new Charles(
 				"C:\\Users\\joegreen\\Desktop\\Uczelnia\\praca-magisterska\\charles\\generatePopulation.js",
 				"C:\\Users\\joegreen\\Desktop\\Uczelnia\\praca-magisterska\\charles\\iteratePopulation2.js",
 				"C:\\Users\\joegreen\\Desktop\\Uczelnia\\praca-magisterska\\charles\\migratePopulations.js",
 				"{\"number\":50, \"dimension\":6, \"range\":5.12}", true, true,
-				10, 5, 1000, 2000, "The Charles Evolution Project");
+				5, 3, 10000, 50000, "The Charles Evolution Project");
 		List<String> populations = charles.calculate();
 		for (int i = 0; i < populations.size(); ++i) {
 			System.out.println("--- Population " + i + " ---");
 			printAsPrettyJson(populations.get(i));
 		}
+		System.out.println("Time: " + (System.currentTimeMillis() - startTime)
+				+ " ms");
 
 	}
 }
