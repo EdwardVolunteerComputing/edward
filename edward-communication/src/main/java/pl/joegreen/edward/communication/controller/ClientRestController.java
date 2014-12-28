@@ -1,5 +1,7 @@
 package pl.joegreen.edward.communication.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -16,6 +18,8 @@ import pl.joegreen.edward.persistence.dao.VolunteerDao;
 @Controller
 @RequestMapping("/client/")
 public class ClientRestController extends RestControllerBase {
+	private final static Logger logger = LoggerFactory
+			.getLogger(ClientRestController.class);
 
 	@Autowired
 	private VolunteerDao volunteerDao;
@@ -24,6 +28,7 @@ public class ClientRestController extends RestControllerBase {
 	@ResponseBody
 	public void sendTaskResult(@PathVariable Long executionId,
 			@RequestBody String result) {
+		logger.info(String.format("Execution %d result received", executionId));
 		executionManagerService.saveExecutionResult(executionId, result);
 	}
 
@@ -31,6 +36,8 @@ public class ClientRestController extends RestControllerBase {
 	@ResponseBody
 	public void sendExecutionError(@PathVariable Long executionId,
 			@RequestBody String error) {
+		logger.info(String.format("Execution %d finished with error",
+				executionId));
 		executionManagerService.saveExecutionError(executionId, error);
 	}
 
@@ -38,9 +45,12 @@ public class ClientRestController extends RestControllerBase {
 	@ResponseBody
 	public ClientExecutionInfo getExecution(@PathVariable long volunteerId)
 			throws NoTaskForClientException {
+		logger.info(String.format("Volunteer %d asks for task", volunteerId));
 		ClientExecutionInfo executionInfo = executionManagerService
 				.createNextExecutionForClient(volunteerId);
 		if (executionInfo != null) {
+			logger.info(String.format("Volunteer %d starts execution %d",
+					volunteerId, executionInfo.getExecutionId()));
 			return executionInfo;
 		} else {
 			throw new NoTaskForClientException();

@@ -9,15 +9,37 @@
 
     console.log("VolunteerId: " + volunteerId);
 
+
     function jobIdToFunctionName(jobId) {
         return "job" + jobId;
     }
+
+
+    function getIntervalByLastInterval(oldInterval){
+        if(oldInterval === 0) {
+            return 500;
+        }else{
+            return Math.min(10000, oldInterval*1.1);
+        }
+    }
+
+
+    var checkInterval = 0;
+    function scheduleProcessing(isImmediate){
+        if(isImmediate){
+            checkInterval = 0;
+        }else{
+            checkInterval = getIntervalByLastInterval(checkInterval);
+        }
+        window.setTimeout(processNextTask, checkInterval);
+    }
+
 
     function processNextTask() {
         $.getJSON("../client/getNextTask/" + volunteerId, function (result) {
             if (!result.inputData) {
                 console.log("No tasks received from server.");
-                window.setTimeout(processNextTask, 1000);
+                scheduleProcessing(false);
                 return;
             }
             var jobId = result.jobId;
@@ -60,7 +82,7 @@
             data: JSON.stringify(result),
             contentType: "application/json"
         })
-        window.setTimeout(processNextTask, 0);
+        scheduleProcessing(true);
     }
 
     function sendErrorToServer(error, executionId) {
@@ -70,8 +92,8 @@
             data: JSON.stringify(error),
             contentType: "application/json"
         })
-        window.setTimeout(processNextTask, 0);
+        scheduleProcessing(true);
     }
 
-    window.setTimeout(processNextTask, 0);
+    scheduleProcessing(true);
 }())
