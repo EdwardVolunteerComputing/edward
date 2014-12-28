@@ -261,17 +261,23 @@ var executionsListGetItems = function (props) {
 }
 
 var executionsListRenderItem = function (item, props) {
-    console.log("wfef")
     var date = new Date(0);
     date.setUTCMilliseconds(item.creationTime);
+    if(item.status==="FINISHED"){
+        var linkPart = (<Link to="execution" params={{
+            projectId: props.params.projectId, jobId: props.params.jobId, taskId: item.taskId, executionId: item.id
+        }}> {item.status} </Link> )
+    }else{
+        var linkPart = item.status;
+    }
     return (<tr>
         <CellWithItemId itemId={item.id}/>
         <td>
-            <Link to="execution" params={{
-                projectId: props.params.projectId, jobId: props.params.jobId, taskId: item.taskId, executionId: item.id
-            }}> {item.status} </Link>
+        {linkPart}
         </td>
+        <td> {item.error} </td>
         <td> {date.toLocaleDateString()} {date.toLocaleTimeString()}</td>
+
     </tr>);
 }
 
