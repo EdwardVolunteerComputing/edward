@@ -21,7 +21,8 @@ public class ClientRestControllerTest extends RestControllerTestBase {
 				.andExpect(OK);
 
 		// get firstExecutionInfo
-		String firstExecutionInfoString = performGetAndReturnContent("/client/getNextTask");
+		String firstExecutionInfoString = performGetAndReturnContent("/client/getNextTask/"
+				+ volunteerDao.getDefaultVolunteer().getId());
 
 		ClientExecutionInfo firstExecutionInfo = mapper.readValue(
 				firstExecutionInfoString, ClientExecutionInfo.class);
@@ -44,8 +45,12 @@ public class ClientRestControllerTest extends RestControllerTestBase {
 
 		// get next executionInfo
 		String secondExecutionInfoString = mockMvc
-				.perform(get("/client/getNextTask").accept(JSON)).andExpect(OK)
-				.andReturn().getResponse().getContentAsString();
+				.perform(
+						get(
+								"/client/getNextTask/"
+										+ +volunteerDao.getDefaultVolunteer()
+												.getId()).accept(JSON))
+				.andExpect(OK).andReturn().getResponse().getContentAsString();
 
 		ClientExecutionInfo secondExecutionInfo = mapper.readValue(
 				secondExecutionInfoString, ClientExecutionInfo.class);

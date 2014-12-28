@@ -1,5 +1,6 @@
 package pl.joegreen.edward.communication.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,10 +11,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import pl.joegreen.edward.communication.controller.exception.NoTaskForClientException;
 import pl.joegreen.edward.core.model.communication.ClientExecutionInfo;
+import pl.joegreen.edward.persistence.dao.VolunteerDao;
 
 @Controller
 @RequestMapping("/client/")
 public class ClientRestController extends RestControllerBase {
+
+	@Autowired
+	private VolunteerDao volunteerDao;
 
 	@RequestMapping(value = "sendResult/{executionId}", method = RequestMethod.POST, consumes = MediaType.ALL_VALUE)
 	@ResponseBody
@@ -29,11 +34,12 @@ public class ClientRestController extends RestControllerBase {
 		executionManagerService.saveExecutionError(executionId, error);
 	}
 
-	@RequestMapping(value = "getNextTask", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "getNextTask/{volunteerId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public ClientExecutionInfo getExecution() throws NoTaskForClientException {
+	public ClientExecutionInfo getExecution(@PathVariable long volunteerId)
+			throws NoTaskForClientException {
 		ClientExecutionInfo executionInfo = executionManagerService
-				.createNextExecutionForClient();
+				.createNextExecutionForClient(volunteerId);
 		if (executionInfo != null) {
 			return executionInfo;
 		} else {

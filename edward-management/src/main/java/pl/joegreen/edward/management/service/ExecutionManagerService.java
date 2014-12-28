@@ -30,16 +30,17 @@ public class ExecutionManagerService {
 	@Autowired
 	private ExecutionDao executionDao;
 
-	public ClientExecutionInfo createNextExecutionForClient() {
+	public ClientExecutionInfo createNextExecutionForClient(long volunteerId) {
 		try {
 			Task taskWithoutExecutions = taskDao
 					.getWithoutOngoingOrFinishedExecutions();
 			if (taskWithoutExecutions == null) {
 				return null;
 			}
+
+			volunteerDao.addIfNotExist(volunteerId);
 			Execution execution = new Execution();
-			execution
-					.setVolunteerId(volunteerDao.getDefaultVolunteer().getId());
+			execution.setVolunteerId(volunteerId);
 			execution.setTaskId(taskWithoutExecutions.getId());
 			executionDao.insert(execution);
 

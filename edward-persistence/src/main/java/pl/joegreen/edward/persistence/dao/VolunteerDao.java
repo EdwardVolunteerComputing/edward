@@ -1,5 +1,6 @@
 package pl.joegreen.edward.persistence.dao;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 
 import pl.joegreen.edward.core.model.Volunteer;
@@ -40,6 +41,16 @@ public class VolunteerDao extends EdwardDao<Volunteer, VolunteersRecord> {
 
 	public Volunteer getDefaultVolunteer() {
 		return getById(DEFAULT_VOLUNTEER_ID);
+	}
+
+	public void addIfNotExist(long id) {
+		try {
+			VolunteersRecord record = dslContext.newRecord(Tables.VOLUNTEERS);
+			record.setId(id);
+			record.store();
+		} catch (DuplicateKeyException ex) {
+			// expected in case volunteer exists
+		}
 	}
 
 }

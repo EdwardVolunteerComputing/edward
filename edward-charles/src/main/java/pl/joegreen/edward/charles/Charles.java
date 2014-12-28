@@ -9,6 +9,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +21,7 @@ import pl.joegreen.edward.rest.client.RestClient;
 import pl.joegreen.edward.rest.client.RestException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -37,6 +42,7 @@ public class Charles {
 	private String evolutionCode;
 	private String migrationCode;
 	private boolean runGenerateLocally;
+	private boolean runImprovementLocally;
 	private boolean runMigrationLocally;
 	private int numberOfPopulations;
 	private int metaIterations;
@@ -45,19 +51,24 @@ public class Charles {
 
 	private Long projectId;
 	private Long evolutionJobId;
+	private Long migrationJobId;
 
 	private String projectName;
 
 	private String generatingCodeOptions;
 
+	private ScriptEngineManager manager = new ScriptEngineManager();
+	private ScriptEngine engine = manager.getEngineByName("nashorn");
+
 	public Charles(String generatingCodeFile, String evolutionCodeFile,
 			String migrationCodeFile, String generatingCodeOptions,
-			boolean runGenerateLocally, boolean runMigrationLocally,
-			int numberOfPopulations, int metaIterations,
-			int iterationsInMetaIteration, int maxMetaIterationTimeMs,
-			String projectName) throws IOException {
+			boolean runGenerateLocally, boolean runImprovementLocally,
+			boolean runMigrationLocally, int numberOfPopulations,
+			int metaIterations, int iterationsInMetaIteration,
+			int maxMetaIterationTimeMs, String projectName) throws IOException {
 		this.generatingCodeOptions = generatingCodeOptions;
 		this.runGenerateLocally = runGenerateLocally;
+		this.runImprovementLocally = runImprovementLocally;
 		this.runMigrationLocally = runMigrationLocally;
 		this.numberOfPopulations = numberOfPopulations;
 		this.metaIterations = metaIterations;
@@ -77,10 +88,13 @@ public class Charles {
 	}
 
 	public List<String> calculate() throws RestException,
-			JsonProcessingException, IOException {
+			JsonProcessingException, IOException, ScriptException {
+		defineAppropriateCodesInEngine();
 		projectId = restClient.addProject(projectName, 1L).getId();
 		evolutionJobId = restClient.addJob(projectId, "ImprovePopulationJob",
 				evolutionCode).getId();
+		migrationJobId = restClient.addJob(projectId,
+				"MigrateBetweenPopulationsJob", migrationCode).getId();
 		ImmutableList<String> populations = generatePopulations();
 		for (int i = 0; i < metaIterations; ++i) {
 			logger.info("Performing meta iteration " + i);
@@ -89,8 +103,46 @@ public class Charles {
 		return populations;
 	}
 
+	private void defineAppropriateCodesInEngine() throws ScriptException {
+		if (runGenerateLocally) {
+			String finalGenerationCode = "var generate = function(input){"
+					+ generatingCode + "}";
+			engine.eval(finalGenerationCode);
+		}
+		if (runImprovementLocally) {
+			String finalImprovementCode = "var improve = function(input){"
+					+ evolutionCode + "}";
+			engine.eval(finalImprovementCode);
+		}
+		if (runMigrationLocally) {
+			String finalMigrationCode = "var migrate = function(input){"
+					+ migrationCode + "}";
+			engine.eval(finalMigrationCode);
+		}
+
+	}
+
+	private String runFunctionLocally(String functionName, String input)
+			throws ScriptException {
+		engine.put("input", input);
+		return engine.eval(
+				"JSON.stringify(" + functionName + "(JSON.parse(input)))")
+				.toString();
+	}
+
 	private ImmutableList<String> generatePopulations() throws RestException,
-			JsonProcessingException, IOException {
+			JsonProcessingException, IOException, ScriptException {
+
+		if (runGenerateLocally) {
+			System.out.println("Generating populations locally");
+			ImmutableList.Builder<String> listBuilder = new Builder<String>();
+			for (int i = 0; i < numberOfPopulations; ++i) {
+				listBuilder.add(runFunctionLocally("generate",
+						generatingCodeOptions));
+			}
+			return listBuilder.build();
+		}
+
 		logger.info("Generating initial populations using Edward");
 		long jobId = restClient.addJob(projectId, "Generate individuals",
 				generatingCode).getId();
@@ -114,10 +166,25 @@ public class Charles {
 
 	private ImmutableList<String> performMetaIteration(
 			ImmutableList<String> populations) throws RestException,
-			JsonProcessingException, IOException {
+			JsonProcessingException, IOException, ScriptException {
 		populations = migrate(populations);
-		ImmutableList<Long> taskIdentifiers = sendPopulationsToVolunteers(populations);
-		return getImprovedPopulations(taskIdentifiers, populations);
+		if (!runImprovementLocally) {
+			ImmutableList<Long> taskIdentifiers = sendPopulationsToVolunteers(populations);
+			return getImprovedPopulations(taskIdentifiers, populations);
+		} else {
+			ImmutableList.Builder<String> builder = new ImmutableList.Builder<String>();
+			JsonNodeFactory factory = JsonNodeFactory.instance;
+			for (String population : populations) {
+				System.out.println("Improving population locally");
+				ObjectNode object = factory.objectNode();
+				object.set("iterations",
+						factory.numberNode(iterationsInMetaIteration));
+				object.set("population",
+						new ObjectMapper().readTree(population));
+				builder.add(runFunctionLocally("improve", object.toString()));
+			}
+			return builder.build();
+		}
 	}
 
 	private ImmutableList<Long> sendPopulationsToVolunteers(
@@ -130,7 +197,9 @@ public class Charles {
 			ObjectNode object = factory.objectNode();
 			object.set("iterations",
 					factory.numberNode(iterationsInMetaIteration));
-			object.set("population", new ObjectMapper().readTree(population));
+			object.set("population", new ObjectMapper().readTree(population)); // TODO:
+																				// terribly
+																				// inefficient
 			array.add(object);
 		}
 
@@ -175,9 +244,46 @@ public class Charles {
 				.collect(Collectors.toCollection(ArrayList::new)));
 	}
 
-	private ImmutableList<String> migrate(ImmutableList<String> populations) {
+	private ImmutableList<String> migrate(ImmutableList<String> populations)
+			throws JsonProcessingException, IOException, RestException,
+			ScriptException {
 		logger.info("Migrating between populations");
-		return populations; // TODO: handle migration
+		JsonNodeFactory factory = JsonNodeFactory.instance;
+		ArrayNode populationsAsSingleArray = factory.arrayNode();
+		ObjectMapper mapper = new ObjectMapper();
+		ArrayList<JsonNode> populationNodes = populations.stream()
+				.map(populationString -> {
+					try {
+						return mapper.readTree(populationString);
+					} catch (Exception ex) {
+						throw new RuntimeException(ex);
+					}
+				}).collect(Collectors.toCollection(ArrayList::new));
+		populationsAsSingleArray.addAll(populationNodes);
+		ObjectNode migrationTaskArgument = mapper.createObjectNode();
+		migrationTaskArgument.put("populations", populationsAsSingleArray);
+		String migrationResult;
+		if (!runMigrationLocally) {
+			ArrayNode addTasksArgument = factory.arrayNode();
+			addTasksArgument.add(migrationTaskArgument);
+			List<Long> taskIdentifiers = restClient.addTasks(migrationJobId,
+					addTasksArgument.toString());
+			migrationResult = blockUntilResult(taskIdentifiers.get(0));
+		} else {
+			System.out.println("Migrating locally");
+			migrationResult = runFunctionLocally("migrate",
+					migrationTaskArgument.toString());
+		}
+		JsonNode newPopulationsNodesArray = mapper.readTree(migrationResult)
+				.get("populations");
+		ArrayList<JsonNode> newPopulationNodes = new ArrayList<JsonNode>();
+		for (int i = 0; i < newPopulationsNodesArray.size(); ++i) {
+			newPopulationNodes.add(newPopulationsNodesArray.get(i));
+		}
+
+		return ImmutableList.copyOf(newPopulationNodes.stream()
+				.map(node -> node.toString())
+				.collect(Collectors.toCollection(ArrayList::new)));
 	}
 
 	private String blockUntilResult(Long taskId) throws RestException {
@@ -218,14 +324,16 @@ public class Charles {
 		}
 	}
 
-	public static void main(String[] args) throws IOException, RestException {
+	public static void main(String[] args) throws IOException, RestException,
+			ScriptException {
 		long startTime = System.currentTimeMillis();
 		Charles charles = new Charles(
 				"C:\\Users\\joegreen\\Desktop\\Uczelnia\\praca-magisterska\\charles\\generatePopulation.js",
 				"C:\\Users\\joegreen\\Desktop\\Uczelnia\\praca-magisterska\\charles\\iteratePopulation2.js",
 				"C:\\Users\\joegreen\\Desktop\\Uczelnia\\praca-magisterska\\charles\\migratePopulations.js",
-				"{\"number\":50, \"dimension\":6, \"range\":5.12}", true, true,
-				5, 3, 10000, 50000, "The Charles Evolution Project");
+				"{\"number\":50, \"dimension\":6, \"range\":5.12}", true,
+				false, true, 5, 3, 10000, 50000,
+				"The Charles Evolution Project");
 		List<String> populations = charles.calculate();
 		for (int i = 0; i < populations.size(); ++i) {
 			System.out.println("--- Population " + i + " ---");
