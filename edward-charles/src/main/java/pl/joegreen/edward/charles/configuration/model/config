@@ -1,0 +1,24 @@
+{
+	//Rastrigin with EMAS
+	"metaIterationsCount":5,
+	"populationsCount": 6,
+	"maxMetaIterationTime": 100000,
+	"generatePhase": {
+		"useVolunteerComputing": false,
+		"codeFiles": ["C:/Users/joegreen/Desktop/Uczelnia/praca-magisterska/charles/rastrigin/generate.js"],
+		"parameters": {"number":50, "dimension":6, "range":5.12}
+	},
+	"improvePhase": {
+		"useVolunteerComputing": true,
+		"codeFiles": ["C:/Users/joegreen/Desktop/Uczelnia/praca-magisterska/charles/rastrigin/improveEMAS.js"],
+		"parameters": {
+			"iterations":10000
+		} 	
+	},
+	"migratePhase": {
+		"useVolunteerComputing": false,
+		"codeFiles": ["C:/Users/joegreen/Desktop/Uczelnia/praca-magisterska/charles/rastrigin/migrate.js"],
+		"parameters": {
+		}
+	}
+}

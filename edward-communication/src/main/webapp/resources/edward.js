@@ -1,10 +1,6 @@
 (function edward() {
     var workerWrapper = new WorkerWrapper();
 
-    var prefix = '(function(input){';
-
-    var suffix = '})';
-
     var volunteerId = new Fingerprint().get();
 
     console.log("VolunteerId: " + volunteerId);
@@ -63,7 +59,7 @@
 
             if (!workerWrapper[jobIdToFunctionName(jobId)]) {
                 $.get("/client/getCode/" + jobId, function (result) {
-                    var functionCode = prefix + result + suffix;
+                    var functionCode = "function() { \n " + result + "\n; return compute}()";
                     console.log("Compiling code for job " + jobId);
                     workerWrapper.transferFunctionCode(jobIdToFunctionName(jobId), functionCode).then(executeTask,
                         callbackForWorkerError)

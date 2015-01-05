@@ -231,8 +231,8 @@ public class InternalRestControllerTest extends RestControllerTestBase {
 
 	@Test
 	// TODO: move to dao tests
-	public void getTasksWithoutOngoingOrFinishedExecutions() throws InvalidObjectException,
-			ObjectDoesntExistException {
+	public void getTasksWithoutOngoingOrFinishedExecutions()
+			throws InvalidObjectException, ObjectDoesntExistException {
 		Job job = modelFixtures.createAndPersistTestJob();
 		JsonData jsonData = new JsonData("14");
 		jsonDataDao.save(jsonData);
@@ -241,8 +241,14 @@ public class InternalRestControllerTest extends RestControllerTestBase {
 		task.setInputDataId(jsonData.getId());
 		taskDao.insert(task);
 
-		Task taskWithoutExecutions = taskDao.getWithoutOngoingOrFinishedExecutions();
+		Task taskWithoutExecutions = taskDao
+				.getNotAbortedAndWithoutOngoingOrFinishedExecutions();
 		assertEquals(task.getId(), taskWithoutExecutions.getId());
+
+		taskDao.abort(task.getId());
+		taskWithoutExecutions = taskDao
+				.getNotAbortedAndWithoutOngoingOrFinishedExecutions();
+		assertNull(taskWithoutExecutions);
 
 	}
 
