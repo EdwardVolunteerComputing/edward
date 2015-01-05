@@ -3,6 +3,7 @@ package pl.joegreen.edward.communication.controller;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -18,6 +19,7 @@ import pl.joegreen.edward.core.model.Job;
 import pl.joegreen.edward.core.model.JsonData;
 import pl.joegreen.edward.core.model.Project;
 import pl.joegreen.edward.core.model.Task;
+import pl.joegreen.edward.core.model.TaskStatus;
 import pl.joegreen.edward.core.model.communication.IdContainer;
 import pl.joegreen.edward.persistence.dao.InvalidObjectException;
 
@@ -71,6 +73,33 @@ public class InternalRestController extends RestControllerBase {
 		return executionDao.getExecutionsByTaskId(id);
 	}
 
+	@RequestMapping(value = "task/{id}/status", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public TaskStatus getTaskStatus(@PathVariable Long id) {
+		return taskDao.getTaskStatus(id);
+	}
+
+	@RequestMapping(value = "task/statuses/{identifiers}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<TaskStatus> getTasksStatuses(
+			@PathVariable List<Long> identifiers) {
+		return identifiers.stream().map(id -> taskDao.getTaskStatus(id))
+				.collect(Collectors.toList());
+	}
+
+	@RequestMapping(value = "task/results/{identifiers}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<JsonData> getTasksResults(@PathVariable List<Long> identifiers) {
+		return identifiers.stream().map(id -> {
+			List<JsonData> result = jsonDataDao.getResultsByTaskId(id);
+			if (result.isEmpty()) {
+				return null;
+			} else {
+				return result.get(0);
+			}
+		}).collect(Collectors.toList());
+	}
+
 	@RequestMapping(value = "task/{id}/input", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public JsonData getInputByTaskId(@PathVariable Long id) {
@@ -115,6 +144,11 @@ public class InternalRestController extends RestControllerBase {
 	@RequestMapping(value = "task", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public @ResponseBody IdContainer insertOrUpdateTask(@RequestBody Task task) {
 		return insertOrUpdate(task, taskDao);
+	}
+
+	@RequestMapping(value = "task/{id}/abort", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public void abortTask(@PathVariable Long id) {
+		taskDao.abort(id);
 	}
 
 	@RequestMapping(value = "data", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)

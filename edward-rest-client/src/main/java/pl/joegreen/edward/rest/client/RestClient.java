@@ -1,9 +1,13 @@
 package pl.joegreen.edward.rest.client;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -26,6 +30,7 @@ import pl.joegreen.edward.core.model.Job;
 import pl.joegreen.edward.core.model.JsonData;
 import pl.joegreen.edward.core.model.Project;
 import pl.joegreen.edward.core.model.Task;
+import pl.joegreen.edward.core.model.TaskStatus;
 import pl.joegreen.edward.core.model.communication.IdContainer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -119,12 +124,65 @@ public class RestClient {
 		}
 	}
 
+	public Map<Long, JsonData> getResults(List<Long> identifiers)
+			throws RestException {
+		try {
+			String url = getBaseUrl() + "/task/results/"
+					+ StringUtils.join(identifiers, ",");
+			HttpGet get = new HttpGet(url);
+			String response = executeAndGetResponse(get);
+			List<JsonData> taskResults = objectMapper.readValue(
+					response,
+					objectMapper.getTypeFactory().constructCollectionType(
+							List.class, JsonData.class));
+			Map<Long, JsonData> result = new HashMap<Long, JsonData>();
+			for (int i = 0; i < identifiers.size(); ++i) {
+				result.put(identifiers.get(i), taskResults.get(i));
+			}
+			return result;
+		} catch (Exception ex) {
+			throw new RestException(ex);
+		}
+	}
+
 	public Task getTask(long id) throws RestException {
 		try {
 			String url = getBaseUrl() + "/task/" + id;
 			HttpGet get = new HttpGet(url);
 			String response = executeAndGetResponse(get);
 			return objectMapper.readValue(response, Task.class);
+		} catch (Exception ex) {
+			throw new RestException(ex);
+		}
+	}
+
+	public TaskStatus getTaskStatus(long id) throws RestException {
+		try {
+			String url = getBaseUrl() + "/task/" + id + "/status";
+			HttpGet get = new HttpGet(url);
+			String response = executeAndGetResponse(get);
+			return objectMapper.readValue(response, TaskStatus.class);
+		} catch (Exception ex) {
+			throw new RestException(ex);
+		}
+	}
+
+	public Map<Long, TaskStatus> getTasksStatuses(List<Long> identifiers)
+			throws RestException {
+		try {
+			String url = getBaseUrl() + "/task/statuses/"
+					+ StringUtils.join(identifiers, ",");
+			HttpGet get = new HttpGet(url);
+			String response = executeAndGetResponse(get);
+			List<TaskStatus> statuses = objectMapper.readValue(
+					response,
+					objectMapper.getTypeFactory().constructCollectionType(
+							List.class, TaskStatus.class));
+			Map<Long, TaskStatus> result = new HashMap<Long, TaskStatus>();
+			for (int i = 0; i < identifiers.size(); ++i) {
+				result.put(identifiers.get(i), statuses.get(i));
+			}
+			return result;
 		} catch (Exception ex) {
 			throw new RestException(ex);
 		}

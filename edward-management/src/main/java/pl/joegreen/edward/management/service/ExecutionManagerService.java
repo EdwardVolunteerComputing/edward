@@ -33,7 +33,7 @@ public class ExecutionManagerService {
 	public ClientExecutionInfo createNextExecutionForClient(long volunteerId) {
 		try {
 			Task taskWithoutExecutions = taskDao
-					.getWithoutOngoingOrFinishedExecutions();
+					.getNotAbortedAndWithoutOngoingOrFinishedExecutions();
 			if (taskWithoutExecutions == null) {
 				return null;
 			}

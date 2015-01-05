@@ -4,6 +4,7 @@ public class Task extends IdentifierProvider {
 
 	private Long jobId;
 	private Long inputDataId;
+	private boolean isAborted;
 
 	public Long getJobId() {
 		return jobId;
@@ -21,12 +22,21 @@ public class Task extends IdentifierProvider {
 		this.inputDataId = inputDataId;
 	}
 
+	public boolean isAborted() {
+		return isAborted;
+	}
+
+	public void setAborted(boolean isAborted) {
+		this.isAborted = isAborted;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result
 				+ ((inputDataId == null) ? 0 : inputDataId.hashCode());
+		result = prime * result + (isAborted ? 1231 : 1237);
 		result = prime * result + ((jobId == null) ? 0 : jobId.hashCode());
 		return result;
 	}
@@ -44,6 +54,8 @@ public class Task extends IdentifierProvider {
 			if (other.inputDataId != null)
 				return false;
 		} else if (!inputDataId.equals(other.inputDataId))
+			return false;
+		if (isAborted != other.isAborted)
 			return false;
 		if (jobId == null) {
 			if (other.jobId != null)

@@ -47,6 +47,15 @@ var getTask = function (id) {
         type: "GET", url: BASE_API_URL + "task/" + id, dataType: 'json', headers: {
             "Authorization": "Basic " + btoa("admin" + ":" + "admin")
         }
+    }).then(function (task) {
+        return $.ajax({
+            type: "GET", url: BASE_API_URL + "task/" + id + "/status", dataType: 'json', headers: {
+                "Authorization": "Basic " + btoa("admin" + ":" + "admin")
+            }
+        }).then(function (status) {
+            task.status = status;
+            return task;
+        })
     })
 }
 
@@ -176,10 +185,7 @@ var GenericList = React.createClass({
             var that = this;
             var markup = this.state.items.map(function (item) {
                 return that.props.itemToMarkupFunction(item, that.props)
-            }).map(function (markup) {
-                return ({markup}
-                )
-            });
+            })
             if (this.state.items.length > 0) {
                 return (
                     <table className="table">
@@ -263,11 +269,11 @@ var executionsListGetItems = function (props) {
 var executionsListRenderItem = function (item, props) {
     var date = new Date(0);
     date.setUTCMilliseconds(item.creationTime);
-    if(item.status==="FINISHED"){
+    if (item.status === "FINISHED") {
         var linkPart = (<Link to="execution" params={{
             projectId: props.params.projectId, jobId: props.params.jobId, taskId: item.taskId, executionId: item.id
         }}> {item.status} </Link> )
-    }else{
+    } else {
         var linkPart = item.status;
     }
     return (<tr>
@@ -367,11 +373,10 @@ var JobBox = React.createClass({
                 <GenericList getItemsFunction={tasksListGetItems} itemToMarkupFunction={tasksListRenderItem} params={this.props.params}/>
                 <button className="btn" onClick = {this.onTasksAdd}> Add tasks </button>
                 <h2> Code </h2>
-                <pre> function(input) &#123; </pre>
+                <pre>Please define function compute(input) </pre>
                 <textarea id="codeArea">
                      {this.state.code}
                 </textarea>
-                <pre> &#125; </pre>
 
             </div>
 
@@ -452,6 +457,8 @@ var TaskBox = React.createClass({
                     <input disabled="true" type="text" id="id" name="id" value= {this.state.id} className="form-control"/>
                     <label htmlFor="jobId">Project id: </label>
                     <input disabled="true" type="text" id="jobId" name="jobId" value= {this.state.jobId} className="form-control"/>
+                    <label htmlFor="jobId">Status: </label>
+                    <input disabled="true" type="text" id="jobId" name="jobId" value= {this.state.status} className="form-control"/>
                 </div>
                 <h2> Executions </h2>
                 <GenericList getItemsFunction={executionsListGetItems} itemToMarkupFunction={executionsListRenderItem} params={this.props.params}/>
