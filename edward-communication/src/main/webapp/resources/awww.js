@@ -158,7 +158,7 @@ if (this.document) {
                 postMessage({id: id, type: "success", result: result});
             }
         } catch (error) {
-            postMessage({id: id, type: "error", error: error.message});
+            postMessage({id: id, type: "error", error: error.message + "[" + error.stack + "]"});
         }
     }
 }

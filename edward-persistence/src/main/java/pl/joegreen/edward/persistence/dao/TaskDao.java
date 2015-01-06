@@ -5,6 +5,8 @@ import java.util.List;
 import org.jooq.Condition;
 import org.jooq.Record1;
 import org.jooq.SelectConditionStep;
+import org.jooq.SelectHavingConditionStep;
+import org.jooq.impl.DSL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +19,8 @@ import pl.joegreen.edward.persistence.generated.tables.records.TasksRecord;
 
 @Component
 public class TaskDao extends EdwardDao<Task, TasksRecord> {
+
+	private static final int MAX_TIMEOUTS = 5;
 
 	@Autowired
 	private JsonDataDao dataDao;
@@ -87,13 +91,6 @@ public class TaskDao extends EdwardDao<Task, TasksRecord> {
 		if (executionsByTaskId.size() == 0) {
 			return TaskStatus.IN_PROGRESS;
 		} else {
-			if (executionsByTaskId.stream().allMatch(
-					execution -> execution.getStatus().equals(
-							ExecutionStatus.TIMEOUT)
-							|| execution.getStatus().equals(
-									ExecutionStatus.CREATED))) {
-				return TaskStatus.IN_PROGRESS;
-			}
 			if (executionsByTaskId.stream().anyMatch(
 					execution -> execution.getStatus().equals(
 							ExecutionStatus.FINISHED))) {
@@ -101,21 +98,56 @@ public class TaskDao extends EdwardDao<Task, TasksRecord> {
 			}
 			if (executionsByTaskId.stream().anyMatch(
 					execution -> execution.getStatus().equals(
+							ExecutionStatus.CREATED))) {
+				return TaskStatus.IN_PROGRESS;
+			}
+			if (executionsByTaskId.stream().anyMatch(
+					execution -> execution.getStatus().equals(
 							ExecutionStatus.FAILED))) {
 				return TaskStatus.FAILED;
 			}
-			throw new IllegalStateException("Cannot determine task status for task id: "
-					+ taskId);
+			// at this moment there may be no executions or only timeouted
+			// executions; if there are none or there are timeouts but not many,
+			// it's still "in progress", otherwise it's "failed" because of too
+			// many timeouts
+			long timeoutedExecutions = executionsByTaskId
+					.stream()
+					.filter(execution -> execution.getStatus().equals(
+							ExecutionStatus.TIMEOUT)).count();
+			if (timeoutedExecutions >= MAX_TIMEOUTS) {
+				return TaskStatus.FAILED;
+			} else {
+				return TaskStatus.IN_PROGRESS;
+			}
 		}
 	}
 
 	public Task getNotAbortedAndWithoutOngoingOrFinishedExecutions() {
 		Condition stateOfExecutionFinishesTaskCondition = Tables.EXECUTIONS.STATUS
 				.in(ExecutionStatus.FINISHED.name(),
-						ExecutionStatus.CREATED.name(),
 						ExecutionStatus.FAILED.name());
 
-		SelectConditionStep<Record1<Long>> identifiersOfTasksWeDontWantSend = dslContext
+		SelectHavingConditionStep<Record1<Long>> identifiersOfTasksThatHaveMaxConcurrentExecutionsRunning = dslContext
+				.selectDistinct(Tables.TASKS.ID)
+				.from(Tables.TASKS)
+				.join(Tables.EXECUTIONS)
+				.on(Tables.TASKS.ID.eq(Tables.EXECUTIONS.TASK_ID))
+				.where(Tables.EXECUTIONS.STATUS.eq(ExecutionStatus.CREATED
+						.toString()))
+				.groupBy(Tables.EXECUTIONS.TASK_ID)
+				.having(DSL.count().greaterOrEqual(
+						Tables.TASKS.CONCURRENT_EXECUTIONS_COUNT));
+
+		SelectHavingConditionStep<Record1<Long>> identifiersOfTasksWithTooManyTimeouts = dslContext
+				.selectDistinct(Tables.TASKS.ID)
+				.from(Tables.TASKS)
+				.join(Tables.EXECUTIONS)
+				.on(Tables.TASKS.ID.eq(Tables.EXECUTIONS.TASK_ID))
+				.where(Tables.EXECUTIONS.STATUS.eq(ExecutionStatus.TIMEOUT
+						.toString())).groupBy(Tables.EXECUTIONS.TASK_ID)
+				.having(DSL.count().greaterOrEqual(MAX_TIMEOUTS));
+
+		SelectConditionStep<Record1<Long>> identifiersOfTasksWithFinishedExecutions = dslContext
 				.selectDistinct(Tables.TASKS.ID).from(Tables.TASKS)
 				.join(Tables.EXECUTIONS)
 				.on(Tables.TASKS.ID.eq(Tables.EXECUTIONS.TASK_ID))
@@ -126,8 +158,14 @@ public class TaskDao extends EdwardDao<Task, TasksRecord> {
 		List<Task> tasks = getByQuery(dslContext
 				.selectDistinct()
 				.from(Tables.TASKS)
-				.where(Tables.TASKS.ID.notIn(identifiersOfTasksWeDontWantSend)
-						.and(notAborted)));
+				.where(Tables.TASKS.ID
+						.notIn(identifiersOfTasksWithFinishedExecutions)
+						.and(Tables.TASKS.ID
+								.notIn(identifiersOfTasksThatHaveMaxConcurrentExecutionsRunning))
+						.and(Tables.TASKS.ID
+								.notIn(identifiersOfTasksWithTooManyTimeouts))
+						.and(notAborted)).orderBy(Tables.TASKS.PRIORITY.desc()));
+
 		if (tasks.isEmpty()) {
 			return null;
 		} else {

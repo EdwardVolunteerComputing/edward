@@ -15,7 +15,8 @@ public class ClientRestControllerTest extends RestControllerTestBase {
 
 		// create and add tasks
 		Job testJob = modelFixtures.createAndPersistTestJob();
-		String addBatchUrl = String.format("/job/%d/tasks", testJob.getId());
+		String addBatchUrl = String
+				.format("/job/%d/tasks/1/0", testJob.getId());
 		String tasksData = "[1, 2]";
 		mockMvc.perform(post(addBatchUrl).contentType(JSON).content(tasksData))
 				.andExpect(OK);

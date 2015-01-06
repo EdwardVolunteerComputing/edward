@@ -1,5 +1,5 @@
-
 drop all objects delete files;
+
 
 create table users(
 	id bigint auto_increment primary key,
@@ -34,6 +34,8 @@ create table jobs(
 
 create table tasks(
 	id bigint auto_increment primary key,
+	priority int not null,
+	concurrent_executions_count int not null,
 	job_id bigint not null,
 	input_data_id bigint not null,
 	aborted boolean not null,

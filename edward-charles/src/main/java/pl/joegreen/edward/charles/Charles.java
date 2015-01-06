@@ -308,7 +308,7 @@ public class Charles {
 	public static void printAsPrettyJson(Map<Object, Object> map) {
 		ObjectMapper mapper = new ObjectMapper();
 		try {
-			logger.debug(mapper.writerWithDefaultPrettyPrinter()
+			logger.info(mapper.writerWithDefaultPrettyPrinter()
 					.writeValueAsString(map));
 		} catch (IOException ex) {
 			logger.error("Cannot parse json: " + map);
@@ -318,14 +318,14 @@ public class Charles {
 	public static void main(String[] args) throws IOException, RestException,
 			ScriptException {
 		Configuration configuration = Configuration
-				.fromFile("C:/Users/joegreen/Desktop/Uczelnia/praca-magisterska/edward/edward-charles/src/main/java/pl/joegreen/edward/charles/configuration/model/config");
+				.fromFile("C:/Users/joegreen/Desktop/Uczelnia/praca-magisterska/charles/labs/config");
 		ArrayList<Long> times = new ArrayList<Long>();
-		for (int i = 0; i < 5; ++i) {
+		for (int i = 0; i < 1; ++i) {
 			long startTime = System.currentTimeMillis();
 			Charles charles = new Charles(configuration);
 			List<Population> populations = charles.calculate();
 			for (int population = 0; i < populations.size(); ++i) {
-				System.out.println("--- Population " + i + " ---");
+				logger.info("--- Population " + i + " ---");
 				printAsPrettyJson(populations.get(i));
 			}
 			Long time = System.currentTimeMillis() - startTime;

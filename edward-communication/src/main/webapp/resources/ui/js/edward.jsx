@@ -119,10 +119,10 @@ var putJob = function (job) {
     })
 }
 
-var putTasks = function (jobId, inputs) {
+var putTasks = function (jobId, inputs, priority, concurrentExecutionsCount) {
     return $.ajax({
         type: "POST",
-        url: BASE_API_URL + "/job/" + jobId + '/tasks',
+        url: BASE_API_URL + "/job/" + jobId + '/tasks/'+priority+"/"+concurrentExecutionsCount,
         dataType: 'json',
         data: inputs,
         contentType: 'application/json',
@@ -254,7 +254,7 @@ var tasksListRenderItem = function (item, props) {
             <Link to="task" params={{
                 projectId: props.params.projectId, jobId: item.jobId, taskId: item.id
             }}>&#35;{item.id}</Link>
-        </td>
+        </td><td>{item.priority}</td>
     </tr>);
 }
 
@@ -417,9 +417,8 @@ var AddJobBox = React.createClass({
                     <input onChange={this.nameChange} type="text" id="name" name="name" value={this.state.name} className="form-control"/>
                 </div>
                 <h2> Code </h2>
-                <pre> function(input) &#123; </pre>
+                <pre>Please define function compute(input) </pre>
                 <textarea id="codeArea"/>
-                <pre> &#125; </pre>
                 <button className="btn" onClick={this.addClick}> Add </button>
 
             </div>
@@ -477,15 +476,19 @@ var TaskBox = React.createClass({
 
 var AddTasksBox = React.createClass({
     mixins: [Navigation], getInitialState: function () {
-        return {inputs: ""};
+        return {priority: 0, concurrentExecutionsCount: 1, inputs: ""};
     }, dataChange: function (codeMirror) {
         console.log("setting state", codeMirror.getValue())
         this.setState({
             inputs: codeMirror.getValue()
         })
+    }, priorityChange: function (event) {
+        this.setState({priority: event.target.value})
+    }, concurrentExecutionsChange: function (event) {
+        this.setState({concurrentExecutionsCount: event.target.value})
     }, addClick: function () {
         var that = this;
-        putTasks(this.props.params.jobId, this.state.inputs).then(function () {
+        putTasks(this.props.params.jobId, this.state.inputs, this.state.priority, this.state.concurrentExecutionsCount).then(function () {
             that.transitionTo("job", that.props.params);
         })
     }, render: function () {
@@ -493,8 +496,15 @@ var AddTasksBox = React.createClass({
             <div>
                 <h1>
                 Add new tasks</h1>
+                <h2> Options </h2>
+                <div className="form-group">
+                    <label htmlFor="name">Priority</label>
+                    <input onChange={this.priorityChange} type="number" id="priority" min="0" name="priority" value={this.state.priority} className="form-control"/>
+                    <label htmlFor="name">Number of concurrent executions</label>
+                    <input onChange={this.concurrentExecutionsChange} type="number" id="priority" min="0" name="priority" value={this.state.concurrentExecutionsCount} className="form-control"/>
+                </div>
                 <h2> Input data </h2>
-                <div>Array if inputs:</div>
+                <div>Array of inputs, ex. [1,2,3]:</div>
                 <textarea id="dataArea"/>
                 <button className="btn" onClick={this.addClick}> Add Tasks </button>
             </div>

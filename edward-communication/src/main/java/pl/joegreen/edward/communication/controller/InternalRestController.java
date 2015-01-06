@@ -181,9 +181,10 @@ public class InternalRestController extends RestControllerBase {
 		delete(id, jsonDataDao);
 	}
 
-	@RequestMapping(value = "job/{jobId}/tasks", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "job/{jobId}/tasks/{priority}/{parallelExecutions}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public List<Long> addManyTasks(@PathVariable Long jobId,
+			@PathVariable Long priority, @PathVariable Long parallelExecutions,
 			@RequestBody String dataForTasks) {
 		ObjectMapper objectMapper = new ObjectMapper();
 		try {
@@ -199,6 +200,8 @@ public class InternalRestController extends RestControllerBase {
 				jsonDataDao.insert(data);
 				Task task = new Task();
 				task.setJobId(jobId);
+				task.setPriority(priority);
+				task.setConcurrentExecutionsCount(parallelExecutions);
 				task.setInputDataId(data.getId());
 				taskDao.insert(task);
 				addedIdentifiers.add(task.getId());
