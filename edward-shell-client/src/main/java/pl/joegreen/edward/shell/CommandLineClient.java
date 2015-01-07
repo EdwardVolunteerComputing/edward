@@ -48,7 +48,8 @@ public class CommandLineClient {
 		CODE_FILE("codeFile", "cf"), CODE("code", "c"), PROJECT_ID("projectId",
 				"pid"), USER_ID("userId", "uid"), NAME("name", "n"), JOB_ID(
 				"jobId", "jid"), DATA("data", "d"), DATA_FILE("dataFile", "df"), TASK_ID(
-				"taskId", "tid");
+				"taskId", "tid"), TASK_PRIORITY("priority", "p"), TASK_CONCURRENT_EXECUTIONS(
+				"concurrentExecutions", "ce");
 
 		private String longName;
 		private String shortName;
@@ -104,8 +105,17 @@ public class CommandLineClient {
 		Subparser tasksAddParser = subparsers.addParser(Command.TASKS_ADD);
 		tasksAddParser.addArgument(Parameter.JOB_ID.getParserArguments())
 				.required(true).type(Long.class);
+		tasksAddParser
+				.addArgument(Parameter.TASK_PRIORITY.getParserArguments())
+				.required(true).type(Long.class);
+		tasksAddParser
+				.addArgument(
+						Parameter.TASK_CONCURRENT_EXECUTIONS
+								.getParserArguments()).required(true)
+				.type(Long.class);
 		MutuallyExclusiveGroup tasksDataGroup = tasksAddParser
 				.addMutuallyExclusiveGroup();
+
 		tasksDataGroup.addArgument(Parameter.DATA.getParserArguments());
 		tasksDataGroup.addArgument(Parameter.DATA_FILE.getParserArguments())
 				.type(Arguments.fileType().acceptSystemIn().verifyCanRead())
@@ -188,6 +198,10 @@ public class CommandLineClient {
 	private void addTasks(Namespace parsedArguments) throws IOException,
 			RestException {
 		Long jobId = parsedArguments.getLong(Parameter.JOB_ID.getLongName());
+		Long priority = parsedArguments.getLong(Parameter.TASK_PRIORITY
+				.getLongName());
+		Long concurrentExecutions = parsedArguments
+				.getLong(Parameter.TASK_CONCURRENT_EXECUTIONS.getLongName());
 		String data = parsedArguments.getString(Parameter.DATA.getLongName());
 		if (data == null) {
 			File dataFile = parsedArguments.get(Parameter.DATA_FILE
@@ -195,7 +209,8 @@ public class CommandLineClient {
 			data = FileUtils.readFileToString(dataFile);
 		}
 
-		printResult(restClient.addTasks(jobId, data));
+		printResult(restClient.addTasks(jobId, data, priority,
+				concurrentExecutions));
 	}
 
 	private void getResult(Namespace parsedArguments) throws RestException {

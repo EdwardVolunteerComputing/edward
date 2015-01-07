@@ -164,7 +164,8 @@ public class Charles {
 			inputs.add(configuration.getPhaseConfiguration(PhaseType.GENERATE).parameters);
 		}
 		List<Long> taskIdentifiers = edwardApiWrapper.addTasks(
-				phaseJobIds.get(PhaseType.GENERATE), inputs);
+				phaseJobIds.get(PhaseType.GENERATE), inputs,
+				configuration.priority, configuration.concurrentExecutions);
 		logger.info("Created populations generate tasks - waiting for results");
 
 		ImmutableList.Builder<Population> listBuilder = new Builder<Population>();
@@ -215,7 +216,8 @@ public class Charles {
 							PhaseType.IMPROVE);
 				}).collect(Collectors.toCollection(ArrayList::new));
 		return edwardApiWrapper.addTasks(phaseJobIds.get(PhaseType.IMPROVE),
-				arguments);
+				arguments, configuration.priority,
+				configuration.concurrentExecutions);
 	}
 
 	private List<Population> getImprovedPopulations(List<Long> taskIdentifiers,
@@ -272,6 +274,12 @@ public class Charles {
 				.forEach(
 						taskId -> results.put(taskId, oldPopulations
 								.get(taskIdentifiers.indexOf(taskId))));
+		try {
+			edwardApiWrapper.abortTasks(taskIdentifiers);
+		} catch (RestException e) {
+			logger.warn("Cannot abort some tasks ", e);
+			// do not stop execution
+		}
 	}
 
 	private List<Population> migratePopulationsLocally(
@@ -297,7 +305,8 @@ public class Charles {
 				"populations", PhaseType.MIGRATE);
 		List<Long> taskIdentifiers = edwardApiWrapper.addTasks(
 				phaseJobIds.get(PhaseType.MIGRATE),
-				Collections.singletonList(migrateArgument));
+				Collections.singletonList(migrateArgument),
+				configuration.priority, configuration.concurrentExecutions);
 		String migrationResult = edwardApiWrapper
 				.blockUntilResult(taskIdentifiers.get(0));
 		return ((List<Map>) objectMapper.readValue(migrationResult, Map.class)
@@ -317,8 +326,14 @@ public class Charles {
 
 	public static void main(String[] args) throws IOException, RestException,
 			ScriptException {
+		// Configuration configuration = Configuration
+		// .fromFile("C:/Users/joegreen/Desktop/Uczelnia/praca-magisterska/charles/labs/config");
 		Configuration configuration = Configuration
-				.fromFile("C:/Users/joegreen/Desktop/Uczelnia/praca-magisterska/charles/labs/config");
+				.fromFile("C:/Users/joegreen/Desktop/Uczelnia/praca-magisterska/charles/rastrigin/config");
+		if (!configuration.isValid()) {
+			throw new RuntimeException("Configuration is invalid: "
+					+ configuration.toString());
+		}
 		ArrayList<Long> times = new ArrayList<Long>();
 		for (int i = 0; i < 1; ++i) {
 			long startTime = System.currentTimeMillis();

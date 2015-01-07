@@ -29,7 +29,7 @@ import pl.joegreen.edward.persistence.dao.TaskDao;
 
 public class RestControllerBase {
 
-	private final static Logger logger = LoggerFactory
+	protected final static Logger logger = LoggerFactory
 			.getLogger(RestControllerBase.class);
 
 	@Autowired

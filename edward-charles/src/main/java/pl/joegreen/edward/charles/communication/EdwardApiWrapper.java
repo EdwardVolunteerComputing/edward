@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import pl.joegreen.edward.core.model.JsonData;
 import pl.joegreen.edward.core.model.TaskStatus;
 import pl.joegreen.edward.rest.client.RestClient;
@@ -19,6 +22,9 @@ public class EdwardApiWrapper {
 	private final static int RESULT_CHECK_INTERVAL_MS = 100;
 	private RestClient restClient = new RestClient("admin", "admin",
 			"localhost", 8080);
+
+	private final static Logger logger = LoggerFactory
+			.getLogger(EdwardApiWrapper.class);
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -61,10 +67,17 @@ public class EdwardApiWrapper {
 				.get(0);
 	}
 
-	public List<Long> addTasks(long jobId, List<Map<Object, Object>> tasks) {
+	public void abortTasks(List<Long> identifiers) throws RestException {
+		logger.info("Aborting tasks: " + identifiers);
+		restClient.abortTasks(identifiers);
+	}
+
+	public List<Long> addTasks(long jobId, List<Map<Object, Object>> tasks,
+			int priority, int concurrentExecutions) {
 		try {
 			return restClient.addTasks(jobId,
-					objectMapper.writeValueAsString(tasks));
+					objectMapper.writeValueAsString(tasks), priority,
+					concurrentExecutions);
 		} catch (JsonProcessingException | RestException e) {
 			throw new RuntimeException(e);
 		}

@@ -95,9 +95,11 @@ public class RestClient {
 		}
 	}
 
-	public List<Long> addTasks(long jobId, String data) throws RestException {
+	public List<Long> addTasks(long jobId, String data, long priority,
+			long concurrentExecutions) throws RestException {
 		try {
-			String url = getBaseUrl() + "/job/" + jobId + "/tasks";
+			String url = getBaseUrl() + "/job/" + jobId + "/tasks/" + priority
+					+ "/" + concurrentExecutions;
 			HttpPost post = createJsonPost(url, data);
 			String response = executeAndGetResponse(post);
 			List<Long> identifiers = objectMapper.readValue(
@@ -119,6 +121,17 @@ public class RestClient {
 					response,
 					objectMapper.getTypeFactory().constructCollectionType(
 							List.class, JsonData.class));
+		} catch (Exception ex) {
+			throw new RestException(ex);
+		}
+	}
+
+	public void abortTasks(List<Long> identifiers) throws RestException {
+		try {
+			String url = getBaseUrl() + "/task/abort/"
+					+ StringUtils.join(identifiers, ",");
+			HttpPost post = createJsonPost(url, "");
+			String response = executeAndGetResponse(post);
 		} catch (Exception ex) {
 			throw new RestException(ex);
 		}

@@ -147,8 +147,16 @@ public class InternalRestController extends RestControllerBase {
 	}
 
 	@RequestMapping(value = "task/{id}/abort", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public void abortTask(@PathVariable Long id) {
+	public @ResponseBody void abortTask(@PathVariable Long id) {
 		taskDao.abort(id);
+	}
+
+	@RequestMapping(value = "task/abort/{identifiers}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public @ResponseBody void abortTasks(@PathVariable List<Long> identifiers) {
+		logger.info("Aborting tasks: " + identifiers);
+		for (long id : identifiers) {
+			taskDao.abort(id);
+		}
 	}
 
 	@RequestMapping(value = "data", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)

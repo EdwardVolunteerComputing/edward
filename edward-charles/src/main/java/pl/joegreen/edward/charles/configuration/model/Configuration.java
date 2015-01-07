@@ -17,6 +17,8 @@ public class Configuration {
 	public Integer metaIterationsCount;
 	public Integer populationsCount;
 	public Integer maxMetaIterationTime;
+	public Integer priority;
+	public Integer concurrentExecutions;
 
 	public PhaseConfiguration generatePhase;
 	public PhaseConfiguration improvePhase;
@@ -68,12 +70,10 @@ public class Configuration {
 		return objectMapper.readValue(file, Configuration.class);
 	}
 
-	// TODO: a way to tell user what is null
 	public boolean isValid() {
-		return Utils
-				.noNulls(metaIterationsCount, populationsCount,
-						maxMetaIterationTime, generatePhase, improvePhase,
-						migratePhase)
+		return Utils.noNulls(metaIterationsCount, populationsCount,
+				maxMetaIterationTime, generatePhase, improvePhase,
+				migratePhase, priority, concurrentExecutions)
 				&& generatePhase.isValid()
 				&& improvePhase.isValid()
 				&& migratePhase.isValid();
@@ -84,8 +84,10 @@ public class Configuration {
 		return "Configuration [metaIterationsCount=" + metaIterationsCount
 				+ ", populationsCount=" + populationsCount
 				+ ", maxMetaIterationTime=" + maxMetaIterationTime
-				+ ", generatePhase=" + generatePhase + ", improvePhase="
-				+ improvePhase + ", migratePhase=" + migratePhase + "]";
+				+ ", priority=" + priority + ", concurrentExecutions="
+				+ concurrentExecutions + ", generatePhase=" + generatePhase
+				+ ", improvePhase=" + improvePhase + ", migratePhase="
+				+ migratePhase + "]";
 	}
 
 }
