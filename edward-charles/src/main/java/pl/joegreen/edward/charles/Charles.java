@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javax.script.Compilable;
 import javax.script.CompiledScript;
@@ -335,14 +336,20 @@ public class Charles {
 					+ configuration.toString());
 		}
 		ArrayList<Long> times = new ArrayList<Long>();
-		for (int i = 0; i < 1; ++i) {
+		for (int i = 0; i < 3; ++i) {
 			long startTime = System.currentTimeMillis();
-			Charles charles = new Charles(configuration);
-			List<Population> populations = charles.calculate();
-			for (int population = 0; i < populations.size(); ++i) {
-				logger.info("--- Population " + i + " ---");
-				printAsPrettyJson(populations.get(i));
-			}
+			IntStream.range(0, 3).parallel().forEach(number -> {
+				Charles charles = new Charles(configuration);
+				try {
+					List<Population> populations = charles.calculate();
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			});
+			// for (int population = 0; i < populations.size(); ++i) {
+			// logger.info("--- Population " + i + " ---");
+			// printAsPrettyJson(populations.get(i));
+			// }
 			Long time = System.currentTimeMillis() - startTime;
 			times.add(time);
 			logger.info("Time: " + time + " ms");
