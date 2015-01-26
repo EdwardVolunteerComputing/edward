@@ -338,7 +338,7 @@ public class Charles {
 		ArrayList<Long> times = new ArrayList<Long>();
 		for (int i = 0; i < 3; ++i) {
 			long startTime = System.currentTimeMillis();
-			IntStream.range(0, 3).parallel().forEach(number -> {
+			IntStream.range(0, 1).parallel().forEach(number -> {
 				Charles charles = new Charles(configuration);
 				try {
 					List<Population> populations = charles.calculate();

@@ -1,5 +1,7 @@
 package pl.joegreen.edward.communication.controller;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,20 +43,34 @@ public class ClientRestController extends RestControllerBase {
 		executionManagerService.saveExecutionError(executionId, error);
 	}
 
-	@RequestMapping(value = "getNextTask/{volunteerId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "getNextTask/{volunteerFingerprint}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public ClientExecutionInfo getExecution(@PathVariable long volunteerId)
+	public ClientExecutionInfo getExecution(
+			@PathVariable long volunteerFingerprint, HttpServletRequest request)
 			throws NoTaskForClientException {
-		logger.info(String.format("Volunteer %d asks for task", volunteerId));
+		String remoteAddress = request.getRemoteAddr();
+		long volunteerId = mixVolunteerFingerprintWithAddress(
+				volunteerFingerprint, remoteAddress);
+
+		logger.info(String.format(
+				"Volunteer(fp: %d, address: %s, id: %d) asks for task",
+				volunteerFingerprint, remoteAddress, volunteerId));
 		ClientExecutionInfo executionInfo = executionManagerService
-				.createNextExecutionForClient(volunteerId);
+				.createNextExecutionForClient(volunteerFingerprint);
 		if (executionInfo != null) {
-			logger.info(String.format("Volunteer %d starts execution %d",
-					volunteerId, executionInfo.getExecutionId()));
+			logger.info(String.format(
+					"Volunteer(fp: %d, address: %s, id: %d) starts %d",
+					volunteerFingerprint, remoteAddress, volunteerId,
+					executionInfo.getExecutionId()));
 			return executionInfo;
 		} else {
 			throw new NoTaskForClientException();
 		}
+	}
+
+	private long mixVolunteerFingerprintWithAddress(long volunteerFingerprint,
+			String remoteAddr) {
+		return (String.valueOf(volunteerFingerprint) + remoteAddr).hashCode();
 	}
 
 	@RequestMapping(value = "getCode/{jobId}", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)

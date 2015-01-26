@@ -1,9 +1,9 @@
 (function edward() {
     var workerWrapper = new WorkerWrapper();
 
-    var volunteerId = new Fingerprint().get();
+    var volunteerFingerprint = new Fingerprint().get();
 
-    console.log("VolunteerId: " + volunteerId);
+    console.log("Volunteer fingerprint: " + volunteerFingerprint);
 
 
     function jobIdToFunctionName(jobId) {
@@ -32,7 +32,7 @@
 
 
     function processNextTask() {
-        $.getJSON("../client/getNextTask/" + volunteerId, function (result) {
+        $.getJSON("../client/getNextTask/" + volunteerFingerprint, function (result) {
             if (!result.inputData) {
                 console.log("No tasks received from server.");
                 scheduleProcessing(false);
