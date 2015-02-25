@@ -182,6 +182,9 @@ public class RestClient {
 
 	public Map<Long, TaskStatus> getTasksStatuses(List<Long> identifiers)
 			throws RestException {
+		if (identifiers.isEmpty()) {
+			return new HashMap<Long, TaskStatus>();
+		}
 		try {
 			String url = getBaseUrl() + "/task/statuses/"
 					+ StringUtils.join(identifiers, ",");

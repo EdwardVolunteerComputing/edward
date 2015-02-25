@@ -39,6 +39,7 @@ create table tasks(
 	job_id bigint not null,
 	input_data_id bigint not null,
 	aborted boolean not null,
+	creation_time bigint not null,
 	foreign key(job_id) references jobs(id),
 	foreign key(input_data_id) references data(id)
 );

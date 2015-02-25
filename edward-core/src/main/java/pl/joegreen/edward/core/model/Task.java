@@ -6,6 +6,7 @@ public class Task extends IdentifierProvider {
 	private Long inputDataId;
 	private long priority = 0;
 	private long concurrentExecutionsCount = 1;
+	private Long creationTime = System.currentTimeMillis();
 	private boolean isAborted;
 
 	public Long getJobId() {
@@ -89,6 +90,14 @@ public class Task extends IdentifierProvider {
 		if (priority != other.priority)
 			return false;
 		return true;
+	}
+
+	public Long getCreationTime() {
+		return creationTime;
+	}
+
+	public void setCreationTime(Long creationTime) {
+		this.creationTime = creationTime;
 	}
 
 }

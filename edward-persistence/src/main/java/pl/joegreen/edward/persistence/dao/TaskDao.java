@@ -164,7 +164,9 @@ public class TaskDao extends EdwardDao<Task, TasksRecord> {
 								.notIn(identifiersOfTasksThatHaveMaxConcurrentExecutionsRunning))
 						.and(Tables.TASKS.ID
 								.notIn(identifiersOfTasksWithTooManyTimeouts))
-						.and(notAborted)).orderBy(Tables.TASKS.PRIORITY.desc()));
+						.and(notAborted))
+				.orderBy(Tables.TASKS.PRIORITY.desc(),
+						Tables.TASKS.CREATION_TIME.asc()));
 
 		if (tasks.isEmpty()) {
 			return null;
