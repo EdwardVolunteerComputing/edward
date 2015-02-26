@@ -310,8 +310,8 @@ public class Charles {
 				configuration.priority, configuration.concurrentExecutions);
 		String migrationResult = edwardApiWrapper
 				.blockUntilResult(taskIdentifiers.get(0));
-		return ((List<Map>) objectMapper.readValue(migrationResult, Map.class)
-				.get("populations")).stream().map(Population::new)
+		return ((List<Population>) objectMapper.readValue(migrationResult,
+				Map.class).get("populations")).stream().map(Population::new)
 				.collect(Collectors.toCollection(ArrayList::new));
 	}
 
