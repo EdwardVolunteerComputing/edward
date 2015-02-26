@@ -67,7 +67,6 @@
 		<module>edward-management</module>
 		<module>edward-rest-client</module>
 		<module>edward-shell-client</module>
-		<module>edward-charles</module>
 	</modules>
 	<build>
 		<plugins>
