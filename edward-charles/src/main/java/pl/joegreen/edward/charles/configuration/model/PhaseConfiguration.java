@@ -15,6 +15,12 @@ public class PhaseConfiguration {
 				+ ", parameters=" + parameters + "]";
 	}
 
+	/** Only migration phase can be asynchronous **/
+	public boolean isAsynchronous() {
+		Object asyncValue = parameters.get("asynchronous");
+		return Boolean.TRUE.equals(asyncValue);
+	}
+
 	public boolean isValid() {
 		return Utils.noNulls(codeFiles, useVolunteerComputing, parameters)
 				&& !codeFiles.isEmpty();

@@ -2,12 +2,15 @@ package pl.joegreen.edward.charles;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -35,8 +38,10 @@ import com.google.common.collect.ImmutableMap;
 
 public class Charles {
 
+	private static final String META_ITERATION_NUMBER_PROPERTY = "metaIteration";
 	private final static org.slf4j.Logger logger = LoggerFactory
 			.getLogger(Charles.class);
+	private static final boolean ASYNC_MIGRATION = true;
 	private final Configuration configuration;
 
 	private EdwardApiWrapper edwardApiWrapper = new EdwardApiWrapper();
@@ -52,18 +57,15 @@ public class Charles {
 
 	public Charles(Configuration configuration) {
 		this.configuration = configuration;
-		String generateCode = CodeReader
-				.readCode(
-						configuration.getPhaseConfiguration(PhaseType.GENERATE).codeFiles,
-						PhaseType.GENERATE);
-		String improveCode = CodeReader
-				.readCode(
-						configuration.getPhaseConfiguration(PhaseType.IMPROVE).codeFiles,
-						PhaseType.IMPROVE);
-		String migrateCode = CodeReader
-				.readCode(
-						configuration.getPhaseConfiguration(PhaseType.MIGRATE).codeFiles,
-						PhaseType.MIGRATE);
+		String generateCode = CodeReader.readCode(
+				configuration.getPhaseConfiguration(PhaseType.GENERATE),
+				PhaseType.GENERATE);
+		String improveCode = CodeReader.readCode(
+				configuration.getPhaseConfiguration(PhaseType.IMPROVE),
+				PhaseType.IMPROVE);
+		String migrateCode = CodeReader.readCode(
+				configuration.getPhaseConfiguration(PhaseType.MIGRATE),
+				PhaseType.MIGRATE);
 		phaseCodes = ImmutableMap.of(PhaseType.GENERATE, generateCode,
 				PhaseType.IMPROVE, improveCode, PhaseType.MIGRATE, migrateCode);
 	}
@@ -79,16 +81,84 @@ public class Charles {
 
 		List<Population> populations = configuration.generatePhase.useVolunteerComputing ? generatePopulationsRemotely()
 				: generatePopulationsLocally();
-		for (int i = 0; i < configuration.metaIterationsCount; ++i) {
-			logger.info("Performing meta iteration " + i);
-			if (i > 0) {
-				populations = configuration.migratePhase.useVolunteerComputing ? migratePopulationsRemotely(populations)
-						: migratePopulationsLocally(populations);
+		if (!configuration.getPhaseConfiguration(PhaseType.MIGRATE)
+				.isAsynchronous()) {
+			for (int i = 0; i < configuration.metaIterationsCount; ++i) {
+				logger.info("Performing meta iteration " + i);
+				if (i > 0) {
+					populations = configuration.migratePhase.useVolunteerComputing ? migratePopulationsRemotely(populations)
+							: migratePopulationsLocally(populations);
+				}
+				populations = configuration.improvePhase.useVolunteerComputing ? improvePopulationsRemotely(populations)
+						: improvePopulationsLocally(populations);
 			}
-			populations = configuration.improvePhase.useVolunteerComputing ? improvePopulationsRemotely(populations)
-					: improvePopulationsLocally(populations);
+		} else {
+			populations.forEach(population -> population.put(
+					META_ITERATION_NUMBER_PROPERTY, 0));
+			Set<Long> remoteTasks = new HashSet<Long>();
+
+			List<Population> finalResults = new ArrayList<Population>();
+
+			Population migrationPool = new Population(
+					new HashMap<Object, Object>());
+			migrationPool.put("individuals", new ArrayList<Object>());
+
+			List<Long> taskIdentifiers = sendPopulationsToVolunteers(populations);
+			remoteTasks.addAll(taskIdentifiers);
+
+			while (finalResults.size() < populations.size()) {
+
+				Map<Long, Population> results = new HashMap<Long, Population>();
+				retrieveImprovedPopulations(remoteTasks, results);
+				results.values()
+						.stream()
+						.forEach(
+								population -> population
+										.put(META_ITERATION_NUMBER_PROPERTY,
+												((Integer) population
+														.get(META_ITERATION_NUMBER_PROPERTY)) + 1));
+
+				results.values()
+						.forEach(
+								population -> {
+									if (((Integer) population
+											.get(META_ITERATION_NUMBER_PROPERTY))
+											.equals(configuration.metaIterationsCount)) {
+										finalResults.add(population);
+									} else {
+										List<Long> identifiers = sendPopulationsToVolunteers(Arrays
+												.asList(migratePopulationAsynchronously(
+														population,
+														migrationPool)));
+										remoteTasks.add(identifiers.get(0));
+									}
+
+								});
+				remoteTasks.removeAll(results.keySet());
+			}
 		}
 		return populations;
+	}
+
+	private Population migratePopulationAsynchronously(Population population,
+			Population pool) {
+		logger.info("Migrating population locally");
+		Map<Object, Object> argument = addOptionsToArgument(population,
+				"population", PhaseType.MIGRATE);
+		argument.put("pool", pool);
+		try {
+			Map<Object, Object> migrationResult = runFunctionLocally(
+					PhaseType.MIGRATE, argument);
+			pool.put("individuals", ((Map<Object, Object>) migrationResult
+					.get("migrationPool")).get("individuals"));
+			Population populationAfterMigration = new Population(
+					(Map<? extends Object, ? extends Object>) migrationResult
+							.get("population"));
+			return populationAfterMigration;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
 	}
 
 	private void initializeLocalJavaScriptEngine() throws ScriptException {
@@ -209,7 +279,9 @@ public class Charles {
 
 	private List<Long> sendPopulationsToVolunteers(
 			Collection<Population> populations) {
-		logger.info("Sending population improvements task to volunteers.");
+		logger.info(String.format(
+				"Sending %d population improvements tasks to volunteers. ",
+				populations.size()));
 		ArrayList<Map<Object, Object>> arguments = populations
 				.stream()
 				.map(population -> {
@@ -244,7 +316,7 @@ public class Charles {
 				.collect(Collectors.toCollection(ArrayList::new)));
 	}
 
-	private void retrieveImprovedPopulations(List<Long> taskIdentifiers,
+	private void retrieveImprovedPopulations(Collection<Long> taskIdentifiers,
 			Map<Long, Population> results) throws RestException, IOException,
 			JsonParseException, JsonMappingException {
 		List<Long> identifiersToGet = taskIdentifiers.stream()
@@ -330,7 +402,7 @@ public class Charles {
 		// Configuration configuration = Configuration
 		// .fromFile("C:/Users/joegreen/Desktop/Uczelnia/praca-magisterska/charles/labs/config");
 		Configuration configuration = Configuration
-				.fromFile("C:/Users/joegreen/Desktop/Uczelnia/praca-magisterska/charles/rastrigin/config");
+				.fromFile("C:/Users/joegreen/Desktop/Uczelnia/praca-magisterska/charles/labs-emas/config");
 		if (!configuration.isValid()) {
 			throw new RuntimeException("Configuration is invalid: "
 					+ configuration.toString());
@@ -338,18 +410,27 @@ public class Charles {
 		ArrayList<Long> times = new ArrayList<Long>();
 		for (int i = 0; i < 3; ++i) {
 			long startTime = System.currentTimeMillis();
-			IntStream.range(0, 1).parallel().forEach(number -> {
-				Charles charles = new Charles(configuration);
-				try {
-					List<Population> populations = charles.calculate();
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-			});
-			// for (int population = 0; i < populations.size(); ++i) {
-			// logger.info("--- Population " + i + " ---");
-			// printAsPrettyJson(populations.get(i));
-			// }
+			IntStream
+					.range(0, 1)
+					.parallel()
+					.forEach(
+							number -> {
+								Charles charles = new Charles(configuration);
+								try {
+									List<Population> populations = charles
+											.calculate();
+
+									for (int populationNumber = 0; populationNumber < populations
+											.size(); ++populationNumber) {
+										logger.info("--- Population "
+												+ populationNumber + " ---");
+										printAsPrettyJson(populations
+												.get(populationNumber));
+									}
+								} catch (Exception e) {
+									throw new RuntimeException(e);
+								}
+							});
 			Long time = System.currentTimeMillis() - startTime;
 			times.add(time);
 			logger.info("Time: " + time + " ms");
