@@ -47,16 +47,52 @@
 				</configuration>
 			</plugin>
 
-
-
+			<!--- This plugin executes database schema creation script 
+			on the temporary H2 file database so that later jooq can 
+			generate classes based on that schema -->
 			<plugin>
-
-				<!-- Specify the maven code generator plugin -->
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>sql-maven-plugin</artifactId>
+				<version>1.5</version>
+				
+				<dependencies>
+						<dependency>
+								<groupId>com.h2database</groupId>
+								<artifactId>h2</artifactId>
+								<version>${h2.version}</version>
+						</dependency>
+				</dependencies>
+				
+			  <configuration>
+				<driver>org.h2.Driver</driver>
+				<url>jdbc:h2:file:${project.build.directory}/schemaForJooq</url>
+				<username>edward</username>
+				</configuration>
+				
+			  <executions>
+				  <execution>
+					<id>create-schema</id>
+					<phase>initialize</phase>
+					<goals>
+					  <goal>execute</goal>
+					</goals>
+					<configuration>
+					  <autocommit>true</autocommit>
+					  <printResultSet>true</printResultSet>
+					  <srcFiles>
+							<srcFile>src/main/resources/createSchema.sql</srcFile>
+						</srcFiles>
+					</configuration>
+				  </execution>
+			  </executions>
+		</plugin>
+			<!-- jooq code generator that generates database-access
+			classes based on database schema created by maven sql plugin -->
+			<plugin>
 				<groupId>org.jooq</groupId>
 				<artifactId>jooq-codegen-maven</artifactId>
 				<version>3.4.2</version>
 
-				<!-- The plugin should hook into the generate goal -->
 				<executions>
 					<execution>
 						<goals>
@@ -73,19 +109,13 @@
 					</dependency>
 				</dependencies>
 
-
-				<!-- Specify the plugin configuration. The configuration format is the 
-					same as for the standalone code generator -->
 				<configuration>
-
-					<!-- JDBC connection parameters -->
 					<jdbc>
 						<driver>org.h2.Driver</driver>
-						<url>jdbc:h2:tcp://localhost/~/test</url>
-						<user>alex</user>
+						<url>jdbc:h2:file:${project.build.directory}/schemaForJooq</url>
+						<user>edward</user>
 					</jdbc>
 
-					<!-- Generator parameters -->
 					<generator>
 						<name>org.jooq.util.DefaultGenerator</name>
 						<database>

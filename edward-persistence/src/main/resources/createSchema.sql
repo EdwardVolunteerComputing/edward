@@ -1,4 +1,4 @@
-drop all objects delete files;
+drop all objects;
 
 
 create table users(
