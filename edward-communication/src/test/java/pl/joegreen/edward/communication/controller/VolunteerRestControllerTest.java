@@ -8,22 +8,22 @@ import org.junit.Test;
 import pl.joegreen.edward.core.model.Job;
 import pl.joegreen.edward.core.model.communication.ClientExecutionInfo;
 
-public class ClientRestControllerTest extends RestControllerTestBase {
+public class VolunteerRestControllerTest extends RestControllerTestBase {
 
 	@Test
 	public void testTaskProcessing() throws Exception {
 
 		// create and add tasks
 		Job testJob = modelFixtures.createAndPersistTestJob();
-		String addBatchUrl = String
-				.format("/job/%d/tasks/1/0", testJob.getId());
+		String addBatchUrl = String.format(INTERNAL_API_URL_BASE
+				+ "/job/%d/tasks/1/0", testJob.getId());
 		String tasksData = "[1, 2]";
 		mockMvc.perform(post(addBatchUrl).contentType(JSON).content(tasksData))
 				.andExpect(OK);
 
 		// get firstExecutionInfo
-		String firstExecutionInfoString = performGetAndReturnContent("/client/getNextTask/"
-				+ volunteerDao.getDefaultVolunteer().getId());
+		String firstExecutionInfoString = performGetAndReturnContent(VOLUNTEER_API_URL_BASE
+				+ "/getNextTask/" + volunteerDao.getDefaultVolunteer().getId());
 
 		ClientExecutionInfo firstExecutionInfo = mapper.readValue(
 				firstExecutionInfoString, ClientExecutionInfo.class);
@@ -39,7 +39,8 @@ public class ClientRestControllerTest extends RestControllerTestBase {
 
 		mockMvc.perform(
 				post(
-						String.format("/client/sendResult/%d",
+						String.format(
+								VOLUNTEER_API_URL_BASE + "/sendResult/%d",
 								firstExecutionInfo.getExecutionId()))
 						.contentType(JSON).content("\"executionResult\""))
 				.andExpect(OK);
@@ -48,7 +49,8 @@ public class ClientRestControllerTest extends RestControllerTestBase {
 		String secondExecutionInfoString = mockMvc
 				.perform(
 						get(
-								"/client/getNextTask/"
+								VOLUNTEER_API_URL_BASE
+										+ "/getNextTask/"
 										+ +volunteerDao.getDefaultVolunteer()
 												.getId()).accept(JSON))
 				.andExpect(OK).andReturn().getResponse().getContentAsString();

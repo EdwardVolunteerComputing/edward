@@ -278,8 +278,8 @@ public class InternalRestControllerTest extends RestControllerTestBase {
 		array.add(doubleData);
 
 		Job testJob = modelFixtures.createAndPersistTestJob();
-		String addBatchUrl = String
-				.format("/job/%d/tasks/0/1", testJob.getId());
+		String addBatchUrl = String.format(INTERNAL_API_URL_BASE
+				+ "/job/%d/tasks/0/1", testJob.getId());
 		mockMvc.perform(
 				post(addBatchUrl).contentType(JSON).content(array.toString()))
 				.andExpect(OK);

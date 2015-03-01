@@ -73,10 +73,13 @@ public class RestControllerTestBase {
 	protected ResultMatcher BAD_REQUEST = status().isBadRequest();
 	protected ResultMatcher EMPTY_CONTENT = content().string("");
 
-	protected final static String DATA_URL = "/data";
-	protected final static String PROJECT_URL = "/project";
-	protected final static String JOB_URL = "/job";
-	protected final static String TASK_URL = "/task";
+	protected final static String VOLUNTEER_API_URL_BASE = "/api/volunteer";
+	protected final static String INTERNAL_API_URL_BASE = "/api/internal";
+	protected final static String DATA_URL = INTERNAL_API_URL_BASE + "/data";
+	protected final static String PROJECT_URL = INTERNAL_API_URL_BASE
+			+ "/project";
+	protected final static String JOB_URL = INTERNAL_API_URL_BASE + "/job";
+	protected final static String TASK_URL = INTERNAL_API_URL_BASE + "/task";
 
 	protected ResultMatcher contentEqualsByJson(Object object)
 			throws JsonProcessingException {
