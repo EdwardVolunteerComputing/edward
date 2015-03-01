@@ -13,7 +13,7 @@ var PAGES = {
 }
 
 
-var BASE_API_URL = "../../"
+var BASE_API_URL = "/api/internal/"
 
 function createCodeMirror(parentNode, selector, options) {
     var lastEditor = null;

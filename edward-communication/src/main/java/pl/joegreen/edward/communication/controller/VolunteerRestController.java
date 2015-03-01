@@ -18,10 +18,10 @@ import pl.joegreen.edward.core.model.communication.ClientExecutionInfo;
 import pl.joegreen.edward.persistence.dao.VolunteerDao;
 
 @Controller
-@RequestMapping("/client/")
-public class ClientRestController extends RestControllerBase {
+@RequestMapping("/api/volunteer/")
+public class VolunteerRestController extends RestControllerBase {
 	private final static Logger logger = LoggerFactory
-			.getLogger(ClientRestController.class);
+			.getLogger(VolunteerRestController.class);
 
 	@Autowired
 	private VolunteerDao volunteerDao;

@@ -15,9 +15,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import pl.joegreen.edward.communication.controller.InternalRestController;
 import pl.joegreen.edward.management.service.ExecutionManagerService;
@@ -27,8 +30,8 @@ import pl.joegreen.edward.persistence.dao.ProjectDao;
 @Configuration
 @EnableWebMvc
 @EnableTransactionManagement
-@ComponentScan(basePackageClasses = { InternalRestController.class, ProjectDao.class,
-		ExecutionManagerService.class })
+@ComponentScan(basePackageClasses = { InternalRestController.class,
+		ProjectDao.class, ExecutionManagerService.class })
 public class SpringServletContextConfig extends WebMvcConfigurerAdapter {
 
 	@Autowired
@@ -72,9 +75,25 @@ public class SpringServletContextConfig extends WebMvcConfigurerAdapter {
 
 	}
 
+	@Bean
+	public ViewResolver viewResolver() {
+		InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+		viewResolver.setSuffix(".html");
+		return viewResolver;
+	}
+
+	@Override
+	public void addViewControllers(ViewControllerRegistry registry) {
+		super.addViewControllers(registry);
+		registry.addViewController("/").setViewName("index");
+		registry.addViewController("/volunteer/").setViewName("index");
+	}
+
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		registry.addResourceHandler("/html/**").addResourceLocations(
-				"/resources/");
+		registry.addResourceHandler("/volunteer/**").addResourceLocations(
+				"/resources/volunteer/");
+		registry.addResourceHandler("/**").addResourceLocations(
+				"/resources/ui/");
 	}
 }

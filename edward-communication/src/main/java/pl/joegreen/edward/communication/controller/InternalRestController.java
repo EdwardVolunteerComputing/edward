@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
 @Controller
-@RequestMapping("/")
+@RequestMapping("/api/internal/")
 public class InternalRestController extends RestControllerBase {
 
 	@RequestMapping(value = "project/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

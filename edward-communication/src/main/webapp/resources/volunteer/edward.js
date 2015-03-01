@@ -1,5 +1,6 @@
 (function edward() {
     var workerWrapper = new WorkerWrapper();
+    var baseApiUrl = "../api/volunteer";
 
     var volunteerFingerprint = new Fingerprint().get();
 
@@ -32,7 +33,7 @@
 
 
     function processNextTask() {
-        $.getJSON("../client/getNextTask/" + volunteerFingerprint, function (result) {
+        $.getJSON(baseApiUrl+"/getNextTask/" + volunteerFingerprint, function (result) {
             if (!result.inputData) {
                 console.log("No tasks received from server.");
                 scheduleProcessing(false);
@@ -58,7 +59,7 @@
 
 
             if (!workerWrapper[jobIdToFunctionName(jobId)]) {
-                $.get("../client/getCode/" + jobId, function (result) {
+                $.get(baseApiUrl+"/getCode/" + jobId, function (result) {
                     var functionCode = "function() { \n " + result + "\n; return compute}()";
                     console.log("Compiling code for job " + jobId);
                     workerWrapper.transferFunctionCode(jobIdToFunctionName(jobId), functionCode).then(executeTask,
@@ -74,7 +75,7 @@
         console.log("Sending execution result to server " + executionId);
         $.ajax({
             type: "POST",
-            url: "../client/sendResult/" + executionId,
+            url: baseApiUrl+"/sendResult/" + executionId,
             data: JSON.stringify(result),
             contentType: "application/json"
         })
@@ -84,7 +85,7 @@
     function sendErrorToServer(error, executionId) {
         $.ajax({
             type: "POST",
-            url: "../client/sendError/" + executionId,
+            url: baseApiUrl+"/sendError/" + executionId,
             data: JSON.stringify(error),
             contentType: "application/json"
         })

@@ -29,9 +29,14 @@ public class SpringSecurityContextConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.exceptionHandling()
 				.authenticationEntryPoint(customAuthenticationEntryPoint).and()
-				.authorizeRequests().antMatchers("/html/**").permitAll()
-				.antMatchers("/client/**").permitAll().antMatchers("/**")
-				.authenticated().and().httpBasic().and()
+				.authorizeRequests().antMatchers("/**")
+				.permitAll()
+				//
+				.antMatchers("/api/client/**")
+				.permitAll()
+				//
+				.antMatchers("/api/internal/**").authenticated().and()
+				.httpBasic().and()
 				//
 				.csrf().disable()
 				//
