@@ -58,7 +58,7 @@
 
 
             if (!workerWrapper[jobIdToFunctionName(jobId)]) {
-                $.get("/client/getCode/" + jobId, function (result) {
+                $.get("../client/getCode/" + jobId, function (result) {
                     var functionCode = "function() { \n " + result + "\n; return compute}()";
                     console.log("Compiling code for job " + jobId);
                     workerWrapper.transferFunctionCode(jobIdToFunctionName(jobId), functionCode).then(executeTask,
@@ -74,7 +74,7 @@
         console.log("Sending execution result to server " + executionId);
         $.ajax({
             type: "POST",
-            url: "/client/sendResult/" + executionId,
+            url: "../client/sendResult/" + executionId,
             data: JSON.stringify(result),
             contentType: "application/json"
         })
@@ -84,7 +84,7 @@
     function sendErrorToServer(error, executionId) {
         $.ajax({
             type: "POST",
-            url: "/client/sendError/" + executionId,
+            url: "../client/sendError/" + executionId,
             data: JSON.stringify(error),
             contentType: "application/json"
         })
