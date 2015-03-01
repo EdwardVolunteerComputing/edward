@@ -131,7 +131,7 @@ public class RestClient {
 			String url = getBaseUrl() + "/task/abort/"
 					+ StringUtils.join(identifiers, ",");
 			HttpPost post = createJsonPost(url, "");
-			String response = executeAndGetResponse(post);
+			executeAndGetResponse(post);
 		} catch (Exception ex) {
 			throw new RestException(ex);
 		}

@@ -25,8 +25,6 @@ public class ClientExecutionInfo {
 		this.executionId = executionId;
 	}
 
-	@SuppressWarnings("unused")
-	/* for Jackson */
 	public Long getJobId() {
 		return jobId;
 	}

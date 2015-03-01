@@ -1,5 +1,6 @@
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<properties>
@@ -47,18 +48,18 @@
 			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
-	
+
 	<distributionManagement>
-	  <repository>
-		 <id>bachor-joegreen</id>
-		 <name>releases@bachor-joegreen</name>
-		 <url>http://bachor.joegreen.pl:8081/nexus/content/repositories/releases/</url>
-	  </repository>
-	  <snapshotRepository>
-		 <id>bachor-joegreen</id>
-		 <name>snapshots@bachor-joegreen</name>
-		 <url>http://bachor.joegreen.pl:8081/nexus/content/repositories/snapshots/</url>
-	  </snapshotRepository>
+		<repository>
+			<id>bachor-joegreen</id>
+			<name>releases@bachor-joegreen</name>
+			<url>http://bachor.joegreen.pl:8081/nexus/content/repositories/releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>bachor-joegreen</id>
+			<name>snapshots@bachor-joegreen</name>
+			<url>http://bachor.joegreen.pl:8081/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
 	</distributionManagement>
 	<modules>
 		<module>edward-core</module>
@@ -77,6 +78,10 @@
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
+					<compilerArgument>-Xlint:all</compilerArgument>
+					<compilerArgument>-Werror</compilerArgument>
+					<showWarnings>true</showWarnings>
+					<showDeprecation>true</showDeprecation>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -88,7 +93,7 @@
 			<dependency>
 				<groupId>com.h2database</groupId>
 				<artifactId>h2</artifactId>
-				<version>${h2.version}</version> 
+				<version>${h2.version}</version>
 			</dependency>
 
 			<dependency>
