@@ -1,0 +1,4 @@
+0.1
+- first working version of the project
+- simple UI allows user to create projects/jobs/tasks and check their results
+- volunteer code is working, tasks can be computed by volunteers and sent back to server
