@@ -47,7 +47,7 @@
 				</configuration>
 			</plugin>
 
-			<!--- This plugin executes database schema creation script 
+			<!-- This plugin executes database schema creation script 
 			on the temporary H2 file database so that later jooq can 
 			generate classes based on that schema -->
 			<plugin>
