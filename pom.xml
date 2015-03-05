@@ -22,7 +22,9 @@
 
 	<name>edward-parent</name>
 	<packaging>pom</packaging>
-
+	<scm>
+		<developerConnection>scm:git:local:.</developerConnection>
+	</scm>
 	<repositories>
 		<repository>
 			<id>sonatype-nexus-snapshots</id>
