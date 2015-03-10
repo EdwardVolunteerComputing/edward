@@ -86,7 +86,9 @@ public class SpringServletContextConfig extends WebMvcConfigurerAdapter {
 	public void addViewControllers(ViewControllerRegistry registry) {
 		super.addViewControllers(registry);
 		registry.addViewController("/").setViewName("index");
+		registry.addRedirectViewController("", "/");
 		registry.addViewController("/volunteer/").setViewName("index");
+		registry.addRedirectViewController("/volunteer", "/volunteer/");
 	}
 
 	@Override
