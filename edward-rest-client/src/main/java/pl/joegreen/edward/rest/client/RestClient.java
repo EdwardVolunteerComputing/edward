@@ -54,10 +54,6 @@ public class RestClient {
 		initializeHttpTools(user, password);
 	}
 
-	public RestClient(String user, String password, String host, int port) {
-		this(user, password, host, port, "http", "");
-	}
-
 	public IdContainer addProject(String name, long userId)
 			throws RestException {
 		try { // TODO: how about using dynamicproxy to rethrow the exceptions

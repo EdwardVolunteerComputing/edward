@@ -71,7 +71,8 @@ public class CommandLineClient {
 	public static void main(String[] args) throws RestException, IOException {
 		try {
 			CommandLineClient commandLineClient = new CommandLineClient(
-					new RestClient("admin", "admin", "localhost", 8080));
+					new RestClient("admin", "admin", "localhost", 8080, "http",
+							""));
 			Namespace parsedArguments = commandLineClient.parseArguments(args);
 			commandLineClient.executeCommand(parsedArguments);
 		} catch (ArgumentParserException ex) {
