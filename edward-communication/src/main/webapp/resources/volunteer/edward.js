@@ -44,6 +44,9 @@
             var executionId = result.executionId;
 
             var callbackForWorkerSuccess = function (result) {
+                if(typeof result === 'undefined'){
+                    sendErrorToServer({message: "Job returned 'undefined'."}, executionId);
+                }
                 sendResultToServer(result, executionId);
             }
 
