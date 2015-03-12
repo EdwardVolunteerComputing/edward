@@ -54,6 +54,20 @@ public class RestClient {
 		initializeHttpTools(user, password);
 	}
 
+	public List<Project> getProjects() throws RestException {
+		try {
+			HttpGet get = new HttpGet(getBaseUrl() + "/project");
+			String response = executeAndGetResponse(get);
+			List<Project> projects = objectMapper.readValue(
+					response,
+					objectMapper.getTypeFactory().constructCollectionType(
+							List.class, Project.class));
+			return projects;
+		} catch (Exception ex) {
+			throw new RestException(ex);
+		}
+	}
+
 	public IdContainer addProject(String name, long userId)
 			throws RestException {
 		try { // TODO: how about using dynamicproxy to rethrow the exceptions
@@ -247,9 +261,16 @@ public class RestClient {
 	}
 
 	private String executeAndGetResponse(HttpUriRequest request)
-			throws ClientProtocolException, IOException {
+			throws ClientProtocolException, IOException, RestException {
 		CloseableHttpResponse response = httpClient.execute(request, context);
-		return IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+		String responseContent = IOUtils.toString(response.getEntity()
+				.getContent(), "UTF-8");
+		if (response.getStatusLine().getStatusCode() != 200) {
+			throw new RestException(
+					"Rest response status is not OK. Response: "
+							+ responseContent);
+		}
+		return responseContent;
 	}
 
 	private HttpPost createJsonPost(String url, String content) {
@@ -260,7 +281,7 @@ public class RestClient {
 	}
 
 	private String getBaseUrl() {
-		return String.format("%s://%s:%d/%s", getProtocol(), getHost(),
-				getPort(), getPrefix());
+		return String.format("%s://%s:%d/%s/api/internal/", getProtocol(),
+				getHost(), getPort(), getPrefix());
 	}
 }
