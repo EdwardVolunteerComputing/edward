@@ -60,7 +60,6 @@ create table executions(
 	output_data_id bigint,
 	status varchar(10) not null,
 	error clob,
--- TODO: isn't biginit too big? ;-) 
 	creation_time bigint not null,
 	foreign key(task_id) references tasks(id),
 	foreign key(volunteer_id) references volunteers(id),
