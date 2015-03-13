@@ -2,3 +2,11 @@
 - first working version of the project
 - simple UI allows user to create projects/jobs/tasks and check their results
 - volunteer code is working, tasks can be computed by volunteers and sent back to server
+
+0.2
+- better url handling (no need to write /index.html)
+- link to volunteer page in UI, minor UI improvements
+- sending server error when undefined is returned by job (previously: timeout)
+- added possibility to define properties file in edward.config system property,
+reading jdbc properties from it
+- creating zip package
