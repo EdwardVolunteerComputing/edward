@@ -1,4 +1,4 @@
-package pl.joegreen.edward.communication.controller;
+package pl.joegreen.edward.persistence.testkit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

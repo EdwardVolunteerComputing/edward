@@ -16,14 +16,13 @@ import pl.joegreen.edward.core.model.JsonData;
 import pl.joegreen.edward.core.model.Project;
 import pl.joegreen.edward.core.model.Task;
 import pl.joegreen.edward.core.model.communication.IdContainer;
-import pl.joegreen.edward.persistence.dao.InvalidObjectException;
-import pl.joegreen.edward.persistence.dao.ObjectDoesntExistException;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public class InternalRestControllerTest extends RestControllerTestBase {
+public class InternalRestControllerIntegrationTest extends
+		RestControllerTestBase {
 
 	@Test
 	public void testData() throws Exception {
@@ -230,29 +229,6 @@ public class InternalRestControllerTest extends RestControllerTestBase {
 	}
 
 	@Test
-	// TODO: move to dao tests
-	public void getTasksWithoutOngoingOrFinishedExecutions()
-			throws InvalidObjectException, ObjectDoesntExistException {
-		Job job = modelFixtures.createAndPersistTestJob();
-		JsonData jsonData = new JsonData("14");
-		jsonDataDao.save(jsonData);
-		Task task = new Task();
-		task.setJobId(job.getId());
-		task.setInputDataId(jsonData.getId());
-		taskDao.insert(task);
-
-		Task taskWithoutExecutions = taskDao
-				.getNotAbortedAndWithoutOngoingOrFinishedExecutions();
-		assertEquals(task.getId(), taskWithoutExecutions.getId());
-
-		taskDao.abort(task.getId());
-		taskWithoutExecutions = taskDao
-				.getNotAbortedAndWithoutOngoingOrFinishedExecutions();
-		assertNull(taskWithoutExecutions);
-
-	}
-
-	@Test
 	public void canAddObjectWithoutIdFieldInJson() throws Exception {
 		JsonNodeFactory factory = JsonNodeFactory.instance;
 		ObjectNode projectContentJson = factory.objectNode();
@@ -286,10 +262,8 @@ public class InternalRestControllerTest extends RestControllerTestBase {
 
 		List<JsonData> jsonData = jsonDataDao.getAll();
 		assertEquals(longData.toString(), jsonData.get(0).getData());
-		assertTrue(jsonData.get(1).getData().contains(stringData)); // string
-																	// gets
-																	// quoted in
-																	// json
+		assertTrue(jsonData.get(1).getData().contains(stringData));
+		// string gets quoted in json
 		assertEquals(doubleData.toString(), jsonData.get(2).getData());
 	}
 

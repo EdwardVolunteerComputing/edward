@@ -8,7 +8,7 @@ import org.junit.Test;
 import pl.joegreen.edward.core.model.Job;
 import pl.joegreen.edward.core.model.communication.ClientExecutionInfo;
 
-public class VolunteerRestControllerTest extends RestControllerTestBase {
+public class VolunteerRestControllerIntegrationTest extends RestControllerTestBase {
 
 	@Test
 	public void testTaskProcessing() throws Exception {

@@ -15,7 +15,7 @@
 
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
-		<param-value>pl.joegreen.edward.communication.configuration.SpringServletContextConfig,pl.joegreen.edward.communication.configuration.ProductionDataSourceConfig,pl.joegreen.edward.communication.configuration.security.SpringSecurityContextConfig</param-value>
+		<param-value>pl.joegreen.edward.communication.configuration.SpringServletContextConfig,pl.joegreen.edward.persistence.configuration.PersistenceContextConfiguration,pl.joegreen.edward.persistence.configuration.ProductionDataSourceConfig,pl.joegreen.edward.communication.configuration.security.SpringSecurityContextConfig</param-value>
 	</context-param>
 
 	<listener>

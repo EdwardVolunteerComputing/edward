@@ -19,7 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import pl.joegreen.edward.communication.configuration.SpringServletContextConfig;
-import pl.joegreen.edward.communication.configuration.TestDataSourceConfig;
+import pl.joegreen.edward.persistence.configuration.PersistenceContextConfiguration;
+import pl.joegreen.edward.persistence.configuration.TestDataSourceConfig;
 import pl.joegreen.edward.persistence.dao.ExecutionDao;
 import pl.joegreen.edward.persistence.dao.JobDao;
 import pl.joegreen.edward.persistence.dao.JsonDataDao;
@@ -27,6 +28,7 @@ import pl.joegreen.edward.persistence.dao.ProjectDao;
 import pl.joegreen.edward.persistence.dao.TaskDao;
 import pl.joegreen.edward.persistence.dao.UserDao;
 import pl.joegreen.edward.persistence.dao.VolunteerDao;
+import pl.joegreen.edward.persistence.testkit.ModelFixtures;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,7 +36,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes = { SpringServletContextConfig.class,
-		TestDataSourceConfig.class, AddModelFixturesConfiguration.class })
+		PersistenceContextConfiguration.class, TestDataSourceConfig.class,
+		AddModelFixturesConfiguration.class })
 @TransactionConfiguration(defaultRollback = true)
 @Transactional
 @Ignore

@@ -1,4 +1,4 @@
-package pl.joegreen.edward.communication.configuration;
+package pl.joegreen.edward.persistence.configuration;
 
 import java.io.InputStreamReader;
 import java.sql.SQLException;

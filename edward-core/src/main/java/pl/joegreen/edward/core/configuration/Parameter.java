@@ -1,4 +1,4 @@
-package pl.joegreen.edward.communication.configuration;
+package pl.joegreen.edward.core.configuration;
 
 public enum Parameter {
 	JDBC_URL("jdbc.url", "jdbc:h2:tcp://localhost/~/edward"), //

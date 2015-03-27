@@ -1,4 +1,4 @@
-package pl.joegreen.edward.communication.configuration;
+package pl.joegreen.edward.persistence.configuration;
 
 import java.sql.SQLException;
 
@@ -8,7 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import pl.joegreen.edward.communication.service.configuration.ConfigurationProvider;
+import pl.joegreen.edward.core.configuration.ConfigurationProvider;
+import pl.joegreen.edward.core.configuration.Parameter;
 
 @Configuration
 @ComponentScan(basePackageClasses = { ConfigurationProvider.class })

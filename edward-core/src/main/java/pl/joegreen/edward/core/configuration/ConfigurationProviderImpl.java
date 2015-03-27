@@ -1,4 +1,4 @@
-package pl.joegreen.edward.communication.service.configuration;
+package pl.joegreen.edward.core.configuration;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -10,8 +10,6 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
-import pl.joegreen.edward.communication.configuration.Parameter;
 
 @Service
 public class ConfigurationProviderImpl implements ConfigurationProvider {
