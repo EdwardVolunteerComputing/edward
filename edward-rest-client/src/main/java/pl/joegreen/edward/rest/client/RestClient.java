@@ -2,9 +2,12 @@ package pl.joegreen.edward.rest.client;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -105,12 +108,12 @@ public class RestClient {
 		}
 	}
 
-	public List<Long> addTasks(long jobId, String data, long priority,
-			long concurrentExecutions) throws RestException {
+	public List<Long> addTasks(long jobId, String tasksJsonArray,
+			long priority, long concurrentExecutions) throws RestException {
 		try {
 			String url = getBaseUrl() + "/job/" + jobId + "/tasks/" + priority
 					+ "/" + concurrentExecutions;
-			HttpPost post = createJsonPost(url, data);
+			HttpPost post = createJsonPost(url, tasksJsonArray);
 			String response = executeAndGetResponse(post);
 			List<Long> identifiers = objectMapper.readValue(
 					response,
@@ -120,6 +123,12 @@ public class RestClient {
 		} catch (Exception ex) {
 			throw new RestException(ex);
 		}
+	}
+
+	public List<Long> addTasks(long jobId, List<String> jsonTasks,
+			long priority, long concurrentExecutions) throws RestException {
+		String tasksArray = "[" + StringUtils.join(jsonTasks, ", ") + "]";
+		return addTasks(jobId, tasksArray, priority, concurrentExecutions);
 	}
 
 	public List<JsonData> getResults(long taskId) throws RestException {
@@ -223,6 +232,64 @@ public class RestClient {
 		} catch (Exception ex) {
 			throw new RestException(ex);
 		}
+	}
+
+	public String getTaskResultBlocking(Long taskId, long checkInterval)
+			throws RestException {
+		Optional<String> result;
+		while (true) {
+			result = getTaskResultIfDone(taskId);
+			if (result.isPresent()) {
+				return result.get();
+			} else {
+				try {
+					Thread.sleep(checkInterval);
+				} catch (InterruptedException e) {
+					throw new RestException(
+							"Thread was interrupted when waiting for task result",
+							e);
+				}
+			}
+		}
+	}
+
+	public Optional<String> getTaskResultIfDone(Long taskId)
+			throws RestException {
+		return getTasksResultsIfDone(Collections.singletonList(taskId)).get(0);
+	}
+
+	public List<Optional<String>> getTasksResultsIfDone(List<Long> identifiers)
+			throws RestException {
+		Map<Long, TaskStatus> idToStatus = getTasksStatuses(identifiers);
+		List<Long> finishedTaskIdentifiers = identifiers.stream()
+				.filter(id -> idToStatus.get(id).equals(TaskStatus.FINISHED))
+				.collect(Collectors.toList());
+
+		Map<Long, JsonData> idToResult = finishedTaskIdentifiers.isEmpty() ? null
+				: getResults(finishedTaskIdentifiers);
+
+		return identifiers
+				.stream()
+				.map(id -> {
+					TaskStatus status = idToStatus.get(id);
+					switch (status) {
+					case ABORTED:
+						throw new RuntimeException(
+								"Computation cannot be finished because the task was aborted. Task id: "
+										+ id);
+					case FAILED:
+						throw new RuntimeException(
+								"Computation cannot be finished because the task failed. Task id: "
+										+ id);
+					case IN_PROGRESS:
+						return Optional.<String> ofNullable(null);
+					case FINISHED:
+						return Optional.<String> of(idToResult.get(id)
+								.getData());
+					default:
+						throw new IllegalStateException();
+					}
+				}).collect(Collectors.toList());
 	}
 
 	private void initializeHttpTools(String user, String password) {
