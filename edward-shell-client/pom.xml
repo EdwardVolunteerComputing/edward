@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>edward-parent</artifactId>
 		<groupId>pl.joegreen.edward</groupId>
-		<version>0.3</version>
+		<version>0.4-SNAPSHOT</version>
 	</parent>
 
 	<name>edward-shell-client</name>
