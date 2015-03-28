@@ -109,10 +109,11 @@ public class RestClient {
 	}
 
 	public List<Long> addTasks(long jobId, String tasksJsonArray,
-			long priority, long concurrentExecutions) throws RestException {
+			long priority, long concurrentExecutions, long timeout)
+			throws RestException {
 		try {
 			String url = getBaseUrl() + "/job/" + jobId + "/tasks/" + priority
-					+ "/" + concurrentExecutions;
+					+ "/" + concurrentExecutions + "/" + timeout;
 			HttpPost post = createJsonPost(url, tasksJsonArray);
 			String response = executeAndGetResponse(post);
 			List<Long> identifiers = objectMapper.readValue(
@@ -126,9 +127,11 @@ public class RestClient {
 	}
 
 	public List<Long> addTasks(long jobId, List<String> jsonTasks,
-			long priority, long concurrentExecutions) throws RestException {
+			long priority, long concurrentExecutions, long timeout)
+			throws RestException {
 		String tasksArray = "[" + StringUtils.join(jsonTasks, ", ") + "]";
-		return addTasks(jobId, tasksArray, priority, concurrentExecutions);
+		return addTasks(jobId, tasksArray, priority, concurrentExecutions,
+				timeout);
 	}
 
 	public List<JsonData> getResults(long taskId) throws RestException {

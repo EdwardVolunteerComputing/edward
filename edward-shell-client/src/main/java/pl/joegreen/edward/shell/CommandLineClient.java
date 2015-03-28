@@ -49,7 +49,7 @@ public class CommandLineClient {
 				"pid"), USER_ID("userId", "uid"), NAME("name", "n"), JOB_ID(
 				"jobId", "jid"), DATA("data", "d"), DATA_FILE("dataFile", "df"), TASK_ID(
 				"taskId", "tid"), TASK_PRIORITY("priority", "p"), TASK_CONCURRENT_EXECUTIONS(
-				"concurrentExecutions", "ce");
+				"concurrentExecutions", "ce"), TASK_TIMEOUT("timeout", "to");
 
 		private String longName;
 		private String shortName;
@@ -114,6 +114,8 @@ public class CommandLineClient {
 						Parameter.TASK_CONCURRENT_EXECUTIONS
 								.getParserArguments()).required(true)
 				.type(Long.class);
+		tasksAddParser.addArgument(Parameter.TASK_TIMEOUT.getParserArguments())
+				.required(true).type(Long.class);
 		MutuallyExclusiveGroup tasksDataGroup = tasksAddParser
 				.addMutuallyExclusiveGroup();
 
@@ -203,6 +205,8 @@ public class CommandLineClient {
 				.getLongName());
 		Long concurrentExecutions = parsedArguments
 				.getLong(Parameter.TASK_CONCURRENT_EXECUTIONS.getLongName());
+		Long timeout = parsedArguments.getLong(Parameter.TASK_TIMEOUT
+				.getLongName());
 		String data = parsedArguments.getString(Parameter.DATA.getLongName());
 		if (data == null) {
 			File dataFile = parsedArguments.get(Parameter.DATA_FILE
@@ -211,7 +215,7 @@ public class CommandLineClient {
 		}
 
 		printResult(restClient.addTasks(jobId, data, priority,
-				concurrentExecutions));
+				concurrentExecutions, timeout));
 	}
 
 	private void getResult(Namespace parsedArguments) throws RestException {
