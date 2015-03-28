@@ -119,10 +119,10 @@ var putJob = function (job) {
     })
 }
 
-var putTasks = function (jobId, inputs, priority, concurrentExecutionsCount) {
+var putTasks = function (jobId, inputs, priority, concurrentExecutionsCount, timeout) {
     return $.ajax({
         type: "POST",
-        url: BASE_API_URL + "/job/" + jobId + '/tasks/'+priority+"/"+concurrentExecutionsCount,
+        url: BASE_API_URL + "/job/" + jobId + '/tasks/' + priority + "/" + concurrentExecutionsCount + "/" + timeout,
         dataType: 'json',
         data: inputs,
         contentType: 'application/json',
@@ -254,7 +254,8 @@ var tasksListRenderItem = function (item, props) {
             <Link to="task" params={{
                 projectId: props.params.projectId, jobId: item.jobId, taskId: item.id
             }}>&#35;{item.id}</Link>
-        </td><td>{item.priority}</td>
+        </td>
+        <td>{item.priority}</td>
     </tr>);
 }
 
@@ -454,10 +455,16 @@ var TaskBox = React.createClass({
                 <div className="form-group">
                     <label htmlFor="id">Id: </label>
                     <input disabled="true" type="text" id="id" name="id" value= {this.state.id} className="form-control"/>
-                    <label htmlFor="jobId">Project id: </label>
-                    <input disabled="true" type="text" id="jobId" name="jobId" value= {this.state.jobId} className="form-control"/>
-                    <label htmlFor="jobId">Status: </label>
-                    <input disabled="true" type="text" id="jobId" name="jobId" value= {this.state.status} className="form-control"/>
+                    <label htmlFor="projectId">Project id: </label>
+                    <input disabled="true" type="text" id="projectId" name="projectId" value= {this.state.jobId} className="form-control"/>
+                    <label htmlFor="priority">Priority:</label>
+                    <input disabled="true" type="text" id="priority" name="priority" value= {this.state.priority} className="form-control"/>
+                    <label htmlFor="concurrentExecutions">Concurrent executions:</label>
+                    <input disabled="true" type="text" id="concurrentExecutions" name="concurrentExecutions" value= {this.state.concurrentExecutionsCount} className="form-control"/>
+                    <label htmlFor="timeout">Timeout:</label>
+                    <input disabled="true" type="text" id="timeout" name="timeout" value= {this.state.timeout} className="form-control"/>
+                    <label htmlFor="status">Status: </label>
+                    <input disabled="true" type="text" id="status" name="status" value= {this.state.status} className="form-control"/>
                 </div>
                 <h2> Executions </h2>
                 <GenericList getItemsFunction={executionsListGetItems} itemToMarkupFunction={executionsListRenderItem} params={this.props.params}/>
@@ -476,7 +483,7 @@ var TaskBox = React.createClass({
 
 var AddTasksBox = React.createClass({
     mixins: [Navigation], getInitialState: function () {
-        return {priority: 0, concurrentExecutionsCount: 1, inputs: ""};
+        return {priority: 0, concurrentExecutionsCount: 1, timeout:5000, inputs: ""};
     }, dataChange: function (codeMirror) {
         console.log("setting state", codeMirror.getValue())
         this.setState({
@@ -486,11 +493,14 @@ var AddTasksBox = React.createClass({
         this.setState({priority: event.target.value})
     }, concurrentExecutionsChange: function (event) {
         this.setState({concurrentExecutionsCount: event.target.value})
+    }, timeoutChange: function (event) {
+        this.setState({timeout: event.target.value})
     }, addClick: function () {
         var that = this;
-        putTasks(this.props.params.jobId, this.state.inputs, this.state.priority, this.state.concurrentExecutionsCount).then(function () {
-            that.transitionTo("job", that.props.params);
-        })
+        putTasks(this.props.params.jobId, this.state.inputs, this.state.priority,
+            this.state.concurrentExecutionsCount, this.state.timeout).then(function () {
+                that.transitionTo("job", that.props.params);
+            })
     }, render: function () {
         return (
             <div>
@@ -502,6 +512,8 @@ var AddTasksBox = React.createClass({
                     <input onChange={this.priorityChange} type="number" id="priority" min="0" name="priority" value={this.state.priority} className="form-control"/>
                     <label htmlFor="name">Number of concurrent executions</label>
                     <input onChange={this.concurrentExecutionsChange} type="number" id="priority" min="0" name="priority" value={this.state.concurrentExecutionsCount} className="form-control"/>
+                    <label htmlFor="name">Timeout [ms]</label>
+                    <input onChange={this.timeoutChange} type="number" id="timeout" min="100" name="priority" value={this.state.timeout} className="form-control"/>
                 </div>
                 <h2> Input data </h2>
                 <div>Array of inputs, ex. [1,2,3]:</div>

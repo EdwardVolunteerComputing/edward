@@ -3,6 +3,9 @@ package pl.joegreen.edward.persistence.dao;
 import java.util.List;
 
 import org.jooq.Condition;
+import org.jooq.Record1;
+import org.jooq.SelectConditionStep;
+import org.jooq.impl.DSL;
 import org.springframework.stereotype.Component;
 
 import pl.joegreen.edward.core.model.Execution;
@@ -54,14 +57,21 @@ public class ExecutionDao extends EdwardDao<Execution, ExecutionsRecord> {
 	}
 
 	public void updateTimeoutStates(long timeout) {
-		long createdBefore = System.currentTimeMillis() - timeout;
-		Condition timeCondition = Tables.EXECUTIONS.CREATION_TIME
-				.lessThan(createdBefore);
+		long currentTime = System.currentTimeMillis();
+		Condition timeCondition = Tables.EXECUTIONS.CREATION_TIME.lessThan(DSL
+				.val(currentTime).minus(Tables.TASKS.TIMEOUT));
 		Condition stateCondition = Tables.EXECUTIONS.STATUS
 				.eq(ExecutionStatus.CREATED.toString());
 		Condition timeoutCondition = timeCondition.and(stateCondition);
+		SelectConditionStep<Record1<Long>> executionsToTimeoutIds = dslContext
+				.select(Tables.EXECUTIONS.ID)
+				.from(Tables.EXECUTIONS.join(Tables.TASKS).on(
+						Tables.EXECUTIONS.TASK_ID.eq(Tables.TASKS.ID)))
+				.where(timeoutCondition);
+
 		dslContext.update(Tables.EXECUTIONS)
 				.set(Tables.EXECUTIONS.STATUS, ExecutionStatus.TIMEOUT.name())
-				.where(timeoutCondition).execute();
+				.where(Tables.EXECUTIONS.ID.in(executionsToTimeoutIds))
+				.execute();
 	}
 }

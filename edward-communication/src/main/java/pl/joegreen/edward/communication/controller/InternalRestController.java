@@ -189,11 +189,11 @@ public class InternalRestController extends RestControllerBase {
 		delete(id, jsonDataDao);
 	}
 
-	@RequestMapping(value = "job/{jobId}/tasks/{priority}/{parallelExecutions}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "job/{jobId}/tasks/{priority}/{parallelExecutions}/{timeout}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public List<Long> addManyTasks(@PathVariable Long jobId,
 			@PathVariable Long priority, @PathVariable Long parallelExecutions,
-			@RequestBody String dataForTasks) {
+			@PathVariable Long timeout, @RequestBody String dataForTasks) {
 		ObjectMapper objectMapper = new ObjectMapper();
 		try {
 			JsonNode taskInputsJson = objectMapper.readTree(dataForTasks);
@@ -209,6 +209,7 @@ public class InternalRestController extends RestControllerBase {
 				Task task = new Task();
 				task.setJobId(jobId);
 				task.setPriority(priority);
+				task.setTimeout(timeout);
 				task.setConcurrentExecutionsCount(parallelExecutions);
 				task.setInputDataId(data.getId());
 				taskDao.insert(task);
