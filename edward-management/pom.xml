@@ -14,13 +14,11 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>edward-core</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>edward-persistence</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 </project>
