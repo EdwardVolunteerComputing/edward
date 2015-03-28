@@ -8,7 +8,8 @@ import org.junit.Test;
 import pl.joegreen.edward.core.model.Job;
 import pl.joegreen.edward.core.model.communication.ClientExecutionInfo;
 
-public class VolunteerRestControllerIntegrationTest extends RestControllerTestBase {
+public class VolunteerRestControllerIntegrationTest extends
+		RestControllerTestBase {
 
 	@Test
 	public void testTaskProcessing() throws Exception {
@@ -16,7 +17,7 @@ public class VolunteerRestControllerIntegrationTest extends RestControllerTestBa
 		// create and add tasks
 		Job testJob = modelFixtures.createAndPersistTestJob();
 		String addBatchUrl = String.format(INTERNAL_API_URL_BASE
-				+ "/job/%d/tasks/1/0", testJob.getId());
+				+ "/job/%d/tasks/1/0/5000", testJob.getId());
 		String tasksData = "[1, 2]";
 		mockMvc.perform(post(addBatchUrl).contentType(JSON).content(tasksData))
 				.andExpect(OK);

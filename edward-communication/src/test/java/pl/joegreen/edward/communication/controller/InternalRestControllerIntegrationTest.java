@@ -255,7 +255,7 @@ public class InternalRestControllerIntegrationTest extends
 
 		Job testJob = modelFixtures.createAndPersistTestJob();
 		String addBatchUrl = String.format(INTERNAL_API_URL_BASE
-				+ "/job/%d/tasks/0/1", testJob.getId());
+				+ "/job/%d/tasks/0/1/5000", testJob.getId());
 		mockMvc.perform(
 				post(addBatchUrl).contentType(JSON).content(array.toString()))
 				.andExpect(OK);
