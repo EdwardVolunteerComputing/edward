@@ -42,6 +42,7 @@ public class SpringSecurityContextConfig extends WebSecurityConfigurerAdapter {
 				//
 				.sessionManagement()
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+		http.antMatcher("/volunteer/").headers().frameOptions().disable();
 
 	}
 
