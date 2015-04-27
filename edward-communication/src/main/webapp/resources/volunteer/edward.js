@@ -74,6 +74,26 @@
         })
     }
 
+    function registerOnServerAndStartProcessing() {
+        console.log("Registering on server");
+        $.ajax({
+            type:"POST",
+            url:baseApiUrl+"/register/"+volunteerFingerprint
+        }).done(handleRegistrationResponse);
+    }
+
+    function handleRegistrationResponse(registrationResponse){
+        window.setInterval(sendHeartbeatToServer, registrationResponse.heartbeatIntervalMs);
+        scheduleProcessing(true);
+    }
+
+    function sendHeartbeatToServer(){
+        $.ajax({
+            type:"POST",
+            url:baseApiUrl+"/heartbeat/"+volunteerFingerprint
+        })
+    }
+
     function sendResultToServer(result, executionId) {
         console.log("Sending execution result to server " + executionId);
         $.ajax({
@@ -94,6 +114,6 @@
         })
         scheduleProcessing(true);
     }
+    registerOnServerAndStartProcessing();
 
-    scheduleProcessing(true);
 }())

@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import pl.joegreen.edward.communication.controller.exception.NoTaskForClientException;
 import pl.joegreen.edward.core.model.communication.ClientExecutionInfo;
+import pl.joegreen.edward.core.model.communication.VolunteerRegistrationResponse;
+import pl.joegreen.edward.management.service.VolunteerManagerService;
 import pl.joegreen.edward.persistence.dao.VolunteerDao;
 
 @Controller
@@ -25,6 +27,8 @@ public class VolunteerRestController extends RestControllerBase {
 
 	@Autowired
 	private VolunteerDao volunteerDao;
+	@Autowired
+	private VolunteerManagerService volunteerManagerService;
 
 	@RequestMapping(value = "sendResult/{executionId}", method = RequestMethod.POST, consumes = MediaType.ALL_VALUE)
 	@ResponseBody
@@ -66,6 +70,34 @@ public class VolunteerRestController extends RestControllerBase {
 		} else {
 			throw new NoTaskForClientException();
 		}
+	}
+
+	@RequestMapping(value = "register/{volunteerFingerprint}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public VolunteerRegistrationResponse register(
+			@PathVariable long volunteerFingerprint, HttpServletRequest request) {
+		String remoteAddress = request.getRemoteAddr();
+		long volunteerId = mixVolunteerFingerprintWithAddress(
+				volunteerFingerprint, remoteAddress);
+
+		logger.info(String.format(
+				"Volunteer(fp: %d, address: %s, id: %d) registers",
+				volunteerFingerprint, remoteAddress, volunteerId));
+		return volunteerManagerService.handleRegistration(volunteerId);
+	}
+
+	@RequestMapping(value = "heartbeat/{volunteerFingerprint}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public void heartbeat(@PathVariable long volunteerFingerprint,
+			HttpServletRequest request) {
+		String remoteAddress = request.getRemoteAddr();
+		long volunteerId = mixVolunteerFingerprintWithAddress(
+				volunteerFingerprint, remoteAddress);
+
+		logger.debug(String.format(
+				"Volunteer(fp: %d, address: %s, id: %d) heartbeats",
+				volunteerFingerprint, remoteAddress, volunteerId));
+		volunteerManagerService.handleHeartbeat(volunteerId);
 	}
 
 	private long mixVolunteerFingerprintWithAddress(long volunteerFingerprint,
