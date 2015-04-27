@@ -222,4 +222,10 @@ public class InternalRestController extends RestControllerBase {
 					"Cannot parse input string as a json array", ex);
 		}
 	}
+
+	@RequestMapping(value = "volunteerCount", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public long getVolunteerCount() {
+		return volunteerManagerService.getNumberOfConnectedVolunteers();
+	}
 }

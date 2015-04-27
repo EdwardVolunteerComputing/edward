@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import pl.joegreen.edward.communication.controller.exception.NoTaskForClientException;
 import pl.joegreen.edward.core.model.communication.ClientExecutionInfo;
 import pl.joegreen.edward.core.model.communication.VolunteerRegistrationResponse;
-import pl.joegreen.edward.management.service.VolunteerManagerService;
 import pl.joegreen.edward.persistence.dao.VolunteerDao;
 
 @Controller
@@ -27,8 +26,6 @@ public class VolunteerRestController extends RestControllerBase {
 
 	@Autowired
 	private VolunteerDao volunteerDao;
-	@Autowired
-	private VolunteerManagerService volunteerManagerService;
 
 	@RequestMapping(value = "sendResult/{executionId}", method = RequestMethod.POST, consumes = MediaType.ALL_VALUE)
 	@ResponseBody

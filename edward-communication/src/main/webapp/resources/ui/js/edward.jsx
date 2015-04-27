@@ -6,7 +6,7 @@ var DefaultRoute = Router.DefaultRoute;
 var Link = Router.Link;
 var ActiveState = Router.ActiveState;
 var Navigation = Router.Navigation;
-
+var VOLUNTEER_COUNT_REFRESH_INTERVAL = 5000;
 
 var PAGES = {
     ALL: 0, PROJECT: 1, JOB: 2, TASK: 3, EXECUTION: 4
@@ -33,6 +33,26 @@ var getProject = function (id) {
         }
     })
 }
+
+var getNumberOfConnectedVolunteers = function(){
+    return $.ajax({
+        type: "GET", url: BASE_API_URL + "volunteerCount/", headers: {
+            "Authorization": "Basic " + btoa("admin" + ":" + "admin")
+        }
+    });
+}
+
+var refreshNumberOfConnectedVolunteers = function(){
+    getNumberOfConnectedVolunteers().done(function(data){
+        $("#connectedVolunteers").text(data);
+    })
+}
+
+
+window.setInterval(refreshNumberOfConnectedVolunteers, VOLUNTEER_COUNT_REFRESH_INTERVAL);
+refreshNumberOfConnectedVolunteers();
+
+
 var getJob = function (id) {
     return $.ajax({
         type: "GET", url: BASE_API_URL + "job/" + id, dataType: 'json', headers: {

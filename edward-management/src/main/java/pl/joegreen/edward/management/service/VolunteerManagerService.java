@@ -58,8 +58,19 @@ public class VolunteerManagerService {
 
 	private void disconnectIfNoHeartbeat() {
 		long currentTime = System.currentTimeMillis();
-		connectedVolunteerToLastHeartbeatTime.entrySet().removeIf(
-				entry -> currentTime - entry.getValue() > HEARTBEAT_TIMEOUT_MS);
+		connectedVolunteerToLastHeartbeatTime
+				.entrySet()
+				.removeIf(
+						entry -> {
+							boolean shouldBeRemoved = currentTime
+									- entry.getValue() > HEARTBEAT_TIMEOUT_MS;
+							if (shouldBeRemoved) {
+								LOG.info(
+										"Volunteer with id {} disconnected (no heartbeat)",
+										entry.getKey());
+							}
+							return shouldBeRemoved;
+						});
 	}
 
 	private void logVolunteerCount() {

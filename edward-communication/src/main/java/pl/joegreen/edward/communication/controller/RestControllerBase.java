@@ -18,6 +18,7 @@ import pl.joegreen.edward.communication.controller.exception.UpdateNonExistingEx
 import pl.joegreen.edward.core.model.IdentifierProvider;
 import pl.joegreen.edward.core.model.communication.IdContainer;
 import pl.joegreen.edward.management.service.ExecutionManagerService;
+import pl.joegreen.edward.management.service.VolunteerManagerService;
 import pl.joegreen.edward.persistence.dao.EdwardDao;
 import pl.joegreen.edward.persistence.dao.ExecutionDao;
 import pl.joegreen.edward.persistence.dao.InvalidObjectException;
@@ -49,6 +50,9 @@ public class RestControllerBase {
 
 	@Autowired
 	protected ExecutionManagerService executionManagerService;
+
+	@Autowired
+	protected VolunteerManagerService volunteerManagerService;
 
 	protected <EdwardModel extends IdentifierProvider> EdwardModel getById(
 			Long id, EdwardDao<EdwardModel, ?> dao) {
