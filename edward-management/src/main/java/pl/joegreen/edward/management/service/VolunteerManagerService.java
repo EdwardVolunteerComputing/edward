@@ -19,9 +19,9 @@ public class VolunteerManagerService {
 
 	private final static Logger LOG = LoggerFactory
 			.getLogger(VolunteerManagerService.class);
-	private final static long HEARTBEAT_TIMEOUT_MS = 1000L;
+	private final static long HEARTBEAT_TIMEOUT_MS = 10000L;
 	private final static long VOLUNTEER_HEARTBEAT_INTERVAL_MS = HEARTBEAT_TIMEOUT_MS / 2;
-	private final static long VOLUNTEER_COUNT_LOG_INTERVAL_MS = 10000L;
+	private final static long VOLUNTEER_COUNT_LOG_INTERVAL_MS = 20000L;
 	private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(
 			1);
 
