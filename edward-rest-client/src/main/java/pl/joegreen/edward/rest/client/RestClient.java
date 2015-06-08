@@ -108,6 +108,16 @@ public class RestClient {
 		}
 	}
 
+	public long getVolunteerCount() throws RestException {
+		String url = getBaseUrl() + "/volunteerCount";
+		try {
+			String response = executeAndGetResponse(new HttpGet(url));
+			return Long.valueOf(response);
+		} catch (IOException e) {
+			throw new RestException(e);
+		}
+	}
+
 	public List<Long> addTasks(long jobId, String tasksJsonArray,
 			long priority, long concurrentExecutions, long timeout)
 			throws RestException {
