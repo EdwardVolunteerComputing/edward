@@ -1,3 +1,9 @@
+0.4
+- added possibility to embed volunteer code in existing websites (embedded-volunteer-snippet.html)
+- volunteers now register and send heartbeat so that server knows how many of them are connected
+- number of connected volunteers is displayed in the footer 
+- RestClient can use getVolunteerCount method to get current number of volunteers
+
 0.3
 - additional convenience methods in RestClient that to retrieve many task results at once in a blocking or non-blocking way
 - possibility to set up timeout on per-task basis 
