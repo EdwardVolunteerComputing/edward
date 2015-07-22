@@ -16,14 +16,14 @@
 
 	<groupId>pl.joegreen.edward</groupId>
 	<artifactId>edward-parent</artifactId>
-	<version>0.5-SNAPSHOT</version>
+	<version>0.5</version>
 
 
 	<name>edward-parent</name>
 	<packaging>pom</packaging>
 	<scm>
 		<developerConnection>scm:git:local:.</developerConnection>
-		<tag>HEAD</tag>
+		<tag>0.5</tag>
 	</scm>
 	<repositories>
 		<repository>

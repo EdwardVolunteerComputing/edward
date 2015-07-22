@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>edward-parent</artifactId>
 		<groupId>pl.joegreen.edward</groupId>
-		<version>0.5-SNAPSHOT</version>
+		<version>0.5</version>
 	</parent>
 
 	<name>edward-management</name>
