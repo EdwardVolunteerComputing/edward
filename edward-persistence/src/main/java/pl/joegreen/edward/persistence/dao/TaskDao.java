@@ -1,9 +1,13 @@
 package pl.joegreen.edward.persistence.dao;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jooq.Condition;
 import org.jooq.Record1;
+import org.jooq.Record2;
+import org.jooq.Result;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectHavingConditionStep;
 import org.jooq.impl.DSL;
@@ -122,7 +126,30 @@ public class TaskDao extends EdwardDao<Task, TasksRecord> {
 		}
 	}
 
-	public Task getNotAbortedAndWithoutOngoingOrFinishedExecutions() {
+	public Map<Long, Integer> getNumberOfConcurrentExecutionsRunningForTasks(
+			List<Long> taskIdentifiers) {
+		Result<Record2<Long, Object>> fetchedResults = dslContext
+				.select(Tables.TASKS.ID,
+						dslContext
+								.selectCount()
+								.from(Tables.EXECUTIONS)
+								.where(Tables.EXECUTIONS.TASK_ID.eq(
+										Tables.TASKS.ID).and(
+										Tables.EXECUTIONS.STATUS
+												.eq(ExecutionStatus.CREATED
+														.toString())))
+								.asField()).from(Tables.TASKS)
+				.where(Tables.TASKS.ID.in(taskIdentifiers)).fetch();
+
+		Map<Long, Integer> taskIdToRunningExecutions = new HashMap<Long, Integer>();
+		for (Record2<Long, Object> fetchedResult : fetchedResults) {
+			taskIdToRunningExecutions.put(fetchedResult.value1(),
+					(Integer) fetchedResult.value2());
+		}
+		return taskIdToRunningExecutions;
+	}
+
+	public List<Task> getNotAbortedAndWithoutOngoingOrFinishedExecutions() {
 		Condition stateOfExecutionFinishesTaskCondition = Tables.EXECUTIONS.STATUS
 				.in(ExecutionStatus.FINISHED.name(),
 						ExecutionStatus.FAILED.name());
@@ -167,11 +194,6 @@ public class TaskDao extends EdwardDao<Task, TasksRecord> {
 						.and(notAborted))
 				.orderBy(Tables.TASKS.PRIORITY.desc(),
 						Tables.TASKS.CREATION_TIME.asc()));
-
-		if (tasks.isEmpty()) {
-			return null;
-		} else {
-			return tasks.get(0);
-		}
+		return tasks;
 	}
 }

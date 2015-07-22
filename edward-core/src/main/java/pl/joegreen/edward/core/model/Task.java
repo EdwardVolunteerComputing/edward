@@ -47,6 +47,10 @@ public class Task extends IdentifierProvider {
 	}
 
 	public void setConcurrentExecutionsCount(long concurrentExecutionsCount) {
+		if (concurrentExecutionsCount <= 0) {
+			throw new IllegalArgumentException(
+					"Concurrent executions count cannot be <=0");
+		}
 		this.concurrentExecutionsCount = concurrentExecutionsCount;
 	}
 

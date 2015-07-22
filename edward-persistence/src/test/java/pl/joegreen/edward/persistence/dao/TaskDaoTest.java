@@ -2,6 +2,8 @@ package pl.joegreen.edward.persistence.dao;
 
 import static org.junit.Assert.*;
 
+import java.util.List;
+
 import org.junit.Test;
 
 import pl.joegreen.edward.core.model.Job;
@@ -21,14 +23,14 @@ public class TaskDaoTest extends BaseDaoTest {
 		task.setInputDataId(jsonData.getId());
 		taskDao.insert(task);
 
-		Task taskWithoutExecutions = taskDao
+		List<Task> tasksWithoutExecutions = taskDao
 				.getNotAbortedAndWithoutOngoingOrFinishedExecutions();
-		assertEquals(task.getId(), taskWithoutExecutions.getId());
+		assertEquals(task.getId(), tasksWithoutExecutions.get(0).getId());
 
 		taskDao.abort(task.getId());
-		taskWithoutExecutions = taskDao
+		tasksWithoutExecutions = taskDao
 				.getNotAbortedAndWithoutOngoingOrFinishedExecutions();
-		assertNull(taskWithoutExecutions);
+		assertTrue(tasksWithoutExecutions.isEmpty());
 
 	}
 }

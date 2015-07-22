@@ -3,23 +3,30 @@ package pl.joegreen.edward.communication.controller;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.io.InputStreamReader;
+import java.sql.SQLException;
+
+import javax.sql.DataSource;
+
+import org.h2.tools.RunScript;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import pl.joegreen.edward.communication.configuration.SpringServletContextConfig;
 import pl.joegreen.edward.persistence.configuration.PersistenceContextConfiguration;
+import pl.joegreen.edward.persistence.configuration.ProductionDataSourceConfig;
 import pl.joegreen.edward.persistence.configuration.TestDataSourceConfig;
 import pl.joegreen.edward.persistence.dao.ExecutionDao;
 import pl.joegreen.edward.persistence.dao.JobDao;
@@ -38,8 +45,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @ContextConfiguration(classes = { SpringServletContextConfig.class,
 		PersistenceContextConfiguration.class, TestDataSourceConfig.class,
 		AddModelFixturesConfiguration.class })
-@TransactionConfiguration(defaultRollback = true)
-@Transactional
+@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 @Ignore
 public class RestControllerTestBase {
 
@@ -65,11 +71,21 @@ public class RestControllerTestBase {
 	@Autowired
 	protected ModelFixtures modelFixtures;
 
+	@Autowired
+	private DataSource dataSource;
+
 	protected ObjectMapper mapper = new ObjectMapper();
 
 	protected MockMvc mockMvc;
 
 	protected final static MediaType JSON = MediaType.APPLICATION_JSON;
+
+	@Before
+	public void initializeEmptyDatabaseSchema() throws SQLException {
+		RunScript.execute(dataSource.getConnection(), new InputStreamReader(
+				ProductionDataSourceConfig.class.getClassLoader()
+						.getResourceAsStream("createSchema.sql")));
+	}
 
 	protected ResultMatcher OK = status().isOk();
 	protected ResultMatcher NOT_FOUND = status().isNotFound();

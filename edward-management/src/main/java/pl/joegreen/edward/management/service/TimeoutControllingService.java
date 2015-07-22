@@ -1,6 +1,7 @@
 package pl.joegreen.edward.management.service;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,7 @@ public class TimeoutControllingService {
 		return interrupted;
 	}
 
+	@PreDestroy
 	public void stopThread() {
 		interrupted = true;
 	}

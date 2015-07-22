@@ -17,14 +17,22 @@ public class VolunteerRestControllerIntegrationTest extends
 		// create and add tasks
 		Job testJob = modelFixtures.createAndPersistTestJob();
 		String addBatchUrl = String.format(INTERNAL_API_URL_BASE
-				+ "/job/%d/tasks/1/0/5000", testJob.getId());
+				+ "/job/%d/tasks/0/1/5000", testJob.getId());
 		String tasksData = "[1, 2]";
 		mockMvc.perform(post(addBatchUrl).contentType(JSON).content(tasksData))
 				.andExpect(OK);
 
 		// get firstExecutionInfo
-		String firstExecutionInfoString = performGetAndReturnContent(VOLUNTEER_API_URL_BASE
-				+ "/getNextTask/" + volunteerDao.getDefaultVolunteer().getId());
+		String firstExecutionInfoString = "{}";
+
+		for (int i = 0; i < 3 && firstExecutionInfoString.equals("{}"); ++i) {
+			firstExecutionInfoString = performGetAndReturnContent(VOLUNTEER_API_URL_BASE
+					+ "/getNextTask/"
+					+ volunteerDao.getDefaultVolunteer().getId());
+			if (firstExecutionInfoString.equals("{}")) {
+				Thread.sleep(2000);
+			}
+		}
 
 		ClientExecutionInfo firstExecutionInfo = mapper.readValue(
 				firstExecutionInfoString, ClientExecutionInfo.class);
