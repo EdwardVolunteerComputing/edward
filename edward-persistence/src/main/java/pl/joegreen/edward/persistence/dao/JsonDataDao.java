@@ -9,19 +9,24 @@ import pl.joegreen.edward.core.model.JsonData;
 import pl.joegreen.edward.persistence.generated.Tables;
 import pl.joegreen.edward.persistence.generated.tables.records.DataRecord;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class JsonDataDao extends EdwardDao<JsonData, DataRecord> {
+	private final static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+	private final static JsonFactory JSON_FACTORY = OBJECT_MAPPER.getFactory();
 
 	public JsonDataDao() {
 		super(Tables.DATA, Tables.DATA.ID, DataRecord.class);
 	}
 
 	private void validateAsJson(String inputData) throws InvalidObjectException {
-		ObjectMapper objectMapper = new ObjectMapper();
 		try {
-			objectMapper.readTree(inputData);
+			JsonParser parser = JSON_FACTORY.createParser(inputData);
+			while (parser.nextToken() != null) {
+			}
 		} catch (Exception ex) {
 			throw new InvalidObjectException(
 					"Data is not in a valid JSON format: " + inputData, ex);
