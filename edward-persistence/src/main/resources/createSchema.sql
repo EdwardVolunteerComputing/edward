@@ -62,6 +62,7 @@ create table executions(
 	status varchar(10) not null,
 	error clob,
 	creation_time bigint not null,
+	completion_time bigint,
 	foreign key(task_id) references tasks(id),
 	foreign key(volunteer_id) references volunteers(id),
 	foreign key(output_data_id) references data(id)

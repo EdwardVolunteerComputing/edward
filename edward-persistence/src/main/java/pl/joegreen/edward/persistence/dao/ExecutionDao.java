@@ -34,6 +34,7 @@ public class ExecutionDao extends EdwardDao<Execution, ExecutionsRecord> {
 		execution.setVolunteerId(record.getVolunteerId());
 		execution.setStatus(ExecutionStatus.valueOf(record.getStatus()));
 		execution.setCreationTime(record.getCreationTime());
+		execution.setCompletionTime(record.getCompletionTime());
 		execution.setError(record.getError());
 		return execution;
 	}
@@ -47,6 +48,7 @@ public class ExecutionDao extends EdwardDao<Execution, ExecutionsRecord> {
 		record.setVolunteerId(model.getVolunteerId());
 		record.setStatus(model.getStatus().name());
 		record.setCreationTime(model.getCreationTime());
+		record.setCompletionTime(model.getCompletionTime());
 		record.setError(model.getError());
 		return record;
 	}

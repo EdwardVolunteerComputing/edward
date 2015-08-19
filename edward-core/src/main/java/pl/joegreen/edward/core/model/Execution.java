@@ -7,6 +7,7 @@ public class Execution extends IdentifierProvider {
 	private ExecutionStatus status = ExecutionStatus.CREATED;
 	private String error;
 	private Long creationTime = System.currentTimeMillis();
+	private Long completionTime;
 
 	public Long getTaskId() {
 		return taskId;
@@ -53,6 +54,8 @@ public class Execution extends IdentifierProvider {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result
+				+ ((completionTime == null) ? 0 : completionTime.hashCode());
+		result = prime * result
 				+ ((creationTime == null) ? 0 : creationTime.hashCode());
 		result = prime * result + ((error == null) ? 0 : error.hashCode());
 		result = prime * result
@@ -73,6 +76,11 @@ public class Execution extends IdentifierProvider {
 		if (getClass() != obj.getClass())
 			return false;
 		Execution other = (Execution) obj;
+		if (completionTime == null) {
+			if (other.completionTime != null)
+				return false;
+		} else if (!completionTime.equals(other.completionTime))
+			return false;
 		if (creationTime == null) {
 			if (other.creationTime != null)
 				return false;
@@ -109,6 +117,14 @@ public class Execution extends IdentifierProvider {
 
 	public void setError(String error) {
 		this.error = error;
+	}
+
+	public Long getCompletionTime() {
+		return completionTime;
+	}
+
+	public void setCompletionTime(Long completionTime) {
+		this.completionTime = completionTime;
 	}
 
 }

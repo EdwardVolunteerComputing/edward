@@ -160,6 +160,7 @@ public class ExecutionManagerService {
 			Execution execution = executionDao.getById(executionId);
 			execution.setOutputDataId(jsonData.getId());
 			execution.setStatus(ExecutionStatus.FINISHED);
+			execution.setCompletionTime(System.currentTimeMillis());
 			executionDao.update(execution);
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
@@ -169,6 +170,7 @@ public class ExecutionManagerService {
 	public void saveExecutionError(Long executionId, String error) {
 		Execution execution = executionDao.getById(executionId);
 		execution.setStatus(ExecutionStatus.FAILED);
+		execution.setCompletionTime(System.currentTimeMillis());
 		execution.setError(error);
 		try {
 			executionDao.update(execution);
