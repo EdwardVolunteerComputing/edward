@@ -57,7 +57,7 @@ public class VolunteerRestController extends RestControllerBase {
 				"Volunteer(fp: %d, address: %s, id: %d) asks for task",
 				volunteerFingerprint, remoteAddress, volunteerId));
 		ClientExecutionInfo executionInfo = executionManagerService
-				.createNextExecutionForClient(volunteerFingerprint);
+				.createNextExecutionForClient(volunteerId);
 		if (executionInfo != null) {
 			logger.info(String.format(
 					"Volunteer(fp: %d, address: %s, id: %d) starts %d",
