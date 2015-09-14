@@ -5,11 +5,17 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import org.junit.Test;
 
+import org.springframework.test.context.ContextConfiguration;
+import pl.joegreen.edward.core.configuration.ConfigurationProvider;
+import pl.joegreen.edward.core.configuration.Parameter;
 import pl.joegreen.edward.core.model.Job;
 import pl.joegreen.edward.core.model.communication.ClientExecutionInfo;
+import pl.joegreen.edward.core.model.communication.VolunteerRegistrationResponse;
+import pl.joegreen.edward.persistence.dao.InvalidObjectException;
 
 public class VolunteerRestControllerIntegrationTest extends
 		RestControllerTestBase {
+
 
 	@Test
 	public void testTaskProcessing() throws Exception {
@@ -73,6 +79,40 @@ public class VolunteerRestControllerIntegrationTest extends
 				firstExecutionInfo.getJobId());
 		assertNotEquals(secondExecutionInfo.getExecutionId(),
 				firstExecutionInfo.getExecutionId());
+
+	}
+
+	@Test
+	public void executionShouldTimeoutIfVolunteerDisconnects() throws Exception {
+        // create and add task
+		Job testJob = modelFixtures.createAndPersistTestJob();
+		//large timeout, execution will not timeout itself
+		String addBatchUrl = String.format(INTERNAL_API_URL_BASE
+				+ "/job/%d/tasks/0/1/100000", testJob.getId());
+		String dataPart = "12345";
+		String tasksData = "["+ dataPart + "]";
+		mockMvc.perform(post(addBatchUrl).contentType(JSON).content(tasksData))
+				.andExpect(OK);
+
+		String registrationResponseContent = mockMvc.perform(post(VOLUNTEER_API_URL_BASE
+				+ "/register")).andExpect(OK).andReturn().getResponse().getContentAsString();
+		VolunteerRegistrationResponse volunteerRegistrationResponse = mapper.readValue(registrationResponseContent, VolunteerRegistrationResponse.class);
+
+		String actualTask = performGetAndReturnContent(VOLUNTEER_API_URL_BASE
+				+ "/getNextTask/"
+				+ volunteerRegistrationResponse.getVolunteerId());
+		assertTrue(actualTask.contains(dataPart));
+
+		String noTask = performGetAndReturnContent(VOLUNTEER_API_URL_BASE
+				+ "/getNextTask/"
+				+ volunteerDao.getDefaultVolunteer().getId());
+		assertEquals("{}",noTask);
+		Thread.sleep(5*volunteerRegistrationResponse.getHeartbeatIntervalMs());
+		String renewedTask = performGetAndReturnContent(VOLUNTEER_API_URL_BASE
+				+ "/getNextTask/"
+				+ volunteerRegistrationResponse.getVolunteerId());
+		assertTrue(renewedTask.contains(dataPart));
+
 
 	}
 }

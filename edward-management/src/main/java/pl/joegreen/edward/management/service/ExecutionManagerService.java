@@ -13,12 +13,15 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.security.auth.login.Configuration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import pl.joegreen.edward.core.configuration.ConfigurationProvider;
+import pl.joegreen.edward.core.configuration.Parameter;
 import pl.joegreen.edward.core.model.Execution;
 import pl.joegreen.edward.core.model.ExecutionStatus;
 import pl.joegreen.edward.core.model.JsonData;
@@ -49,11 +52,13 @@ public class ExecutionManagerService {
 	@Autowired
 	private ExecutionDao executionDao;
 
+	@Autowired
+	private ConfigurationProvider configurationProvider;
+
 	private Queue<Task> tasks = new ConcurrentLinkedQueue<Task>();
 	private ReadWriteLock tasksLock = new ReentrantReadWriteLock(true);
 	private Lock readTasksLock = tasksLock.readLock();
 	private Lock writeTasksLock = tasksLock.writeLock();
-	private final static int TASKS_REFRESH_INTERVAL_MILLIS = 1000;
 
 	private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
 
@@ -115,7 +120,7 @@ public class ExecutionManagerService {
 		scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1);
 		scheduledThreadPoolExecutor.scheduleAtFixedRate(new TasksLoadingThread(
 				writeTasksLock, taskDao, tasks), 0,
-				TASKS_REFRESH_INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
+				configurationProvider.getValueAsLong(Parameter.TASK_REFRESH_INTERVAL_MS), TimeUnit.MILLISECONDS);
 	}
 
 	@PreDestroy

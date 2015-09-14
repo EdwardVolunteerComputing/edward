@@ -44,7 +44,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @WebAppConfiguration
 @ContextConfiguration(classes = { SpringServletContextConfig.class,
 		PersistenceContextConfiguration.class, TestDataSourceConfig.class,
-		AddModelFixturesConfiguration.class })
+		AddModelFixturesConfiguration.class, LowTimeoutConfigurationProviderContext.class, })
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 @Ignore
 public class RestControllerTestBase {

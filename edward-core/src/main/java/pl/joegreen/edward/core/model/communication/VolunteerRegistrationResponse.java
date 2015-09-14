@@ -2,8 +2,8 @@ package pl.joegreen.edward.core.model.communication;
 
 public class VolunteerRegistrationResponse {
 
-	private final long heartbeatIntervalMs;
-	private final long volunteerId;
+	private long heartbeatIntervalMs;
+	private long volunteerId;
 
 	public long getHeartbeatIntervalMs() {
 		return heartbeatIntervalMs;
@@ -17,4 +17,6 @@ public class VolunteerRegistrationResponse {
 		this.heartbeatIntervalMs = heartbeatIntervalMs;
 		this.volunteerId = volunteerId;
 	}
+
+	private VolunteerRegistrationResponse(){}
 }

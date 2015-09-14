@@ -55,4 +55,9 @@ public class ConfigurationProviderImpl implements ConfigurationProvider {
 			return valueFromFile;
 		}
 	}
+
+	@Override
+	public long getValueAsLong(Parameter parameter){
+		return Long.valueOf(getValue(parameter));
+	}
 }

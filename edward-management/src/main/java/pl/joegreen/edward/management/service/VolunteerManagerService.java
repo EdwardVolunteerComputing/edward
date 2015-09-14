@@ -1,10 +1,13 @@
 package pl.joegreen.edward.management.service;
 
 import java.security.SecureRandom;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -13,76 +16,86 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import pl.joegreen.edward.core.configuration.ConfigurationProvider;
+import pl.joegreen.edward.core.configuration.Parameter;
 import pl.joegreen.edward.core.model.communication.VolunteerRegistrationResponse;
+import pl.joegreen.edward.persistence.dao.ExecutionDao;
 import pl.joegreen.edward.persistence.dao.VolunteerDao;
 
 @Component
 public class VolunteerManagerService {
 
-	private final static Logger LOG = LoggerFactory
-			.getLogger(VolunteerManagerService.class);
-	private final static long HEARTBEAT_TIMEOUT_MS = 10000L;
-	private final static long VOLUNTEER_HEARTBEAT_INTERVAL_MS = HEARTBEAT_TIMEOUT_MS / 2;
-	private final static long VOLUNTEER_COUNT_LOG_INTERVAL_MS = 20000L;
-	private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(
-			1);
-	private SecureRandom secureRandom = new SecureRandom();
+    private final static Logger LOG = LoggerFactory
+            .getLogger(VolunteerManagerService.class);
+    private long heartbeatTimeoutMs;
+    private long heartbeatIntervalMs;
 
-	@Autowired
-	private VolunteerDao volunteerDao;
+    private final static long VOLUNTEER_COUNT_LOG_INTERVAL_MS = 20000L;
+    private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(
+            1);
+    private SecureRandom secureRandom = new SecureRandom();
 
-	@PostConstruct
-	private void initialize() {
-		executor.scheduleAtFixedRate(this::disconnectIfNoHeartbeat,
-				HEARTBEAT_TIMEOUT_MS, HEARTBEAT_TIMEOUT_MS,
-				TimeUnit.MILLISECONDS);
-		executor.scheduleAtFixedRate(this::logVolunteerCount,
-				VOLUNTEER_COUNT_LOG_INTERVAL_MS,
-				VOLUNTEER_COUNT_LOG_INTERVAL_MS, TimeUnit.MILLISECONDS);
-	}
+    @Autowired
+    private VolunteerDao volunteerDao;
 
-	private final ConcurrentHashMap<Long, Long> connectedVolunteerToLastHeartbeatTime = new ConcurrentHashMap<>();
+    @Autowired
+    private ExecutionDao executionDao;
 
-	public void handleHeartbeat(long volunteerId) {
-		connectedVolunteerToLastHeartbeatTime.put(volunteerId,
-				System.currentTimeMillis());
-	}
+    @Autowired
+    private ConfigurationProvider configurationProvider;
 
-	public VolunteerRegistrationResponse handleRegistration() {
-		long id = generateIdForVolunteer();
-		volunteerDao.addIfNotExist(id);
-		return new VolunteerRegistrationResponse(
-				id, VOLUNTEER_HEARTBEAT_INTERVAL_MS);
+    @PostConstruct
+    private void initialize() {
+        heartbeatIntervalMs = configurationProvider.getValueAsLong(Parameter.VOLUNTEER_HEARTBEAT_INTERVAL_MS);
+        heartbeatTimeoutMs = heartbeatIntervalMs * 2;
+        executor.scheduleAtFixedRate(this::disconnectIfNoHeartbeat,
+                heartbeatIntervalMs, heartbeatIntervalMs,
+                TimeUnit.MILLISECONDS);
+        executor.scheduleAtFixedRate(this::logVolunteerCount,
+                VOLUNTEER_COUNT_LOG_INTERVAL_MS,
+                VOLUNTEER_COUNT_LOG_INTERVAL_MS, TimeUnit.MILLISECONDS);
+    }
 
-	}
+    private final ConcurrentHashMap<Long, Long> connectedVolunteerToLastHeartbeatTime = new ConcurrentHashMap<>();
 
-	public int getNumberOfConnectedVolunteers() {
-		return connectedVolunteerToLastHeartbeatTime.size();
-	}
+    public void handleHeartbeat(long volunteerId) {
+        connectedVolunteerToLastHeartbeatTime.put(volunteerId,
+                System.currentTimeMillis());
+    }
 
-	private void disconnectIfNoHeartbeat() {
-		long currentTime = System.currentTimeMillis();
-		connectedVolunteerToLastHeartbeatTime
-				.entrySet()
-				.removeIf(
-						entry -> {
-							boolean shouldBeRemoved = currentTime
-									- entry.getValue() > HEARTBEAT_TIMEOUT_MS;
-							if (shouldBeRemoved) {
-								LOG.info(
-										"Volunteer with id {} disconnected (no heartbeat)",
-										entry.getKey());
-							}
-							return shouldBeRemoved;
-						});
-	}
+    public VolunteerRegistrationResponse handleRegistration() {
+        long id = generateIdForVolunteer();
+        volunteerDao.addIfNotExist(id);
+        handleHeartbeat(id);
+        return new VolunteerRegistrationResponse(
+                id, heartbeatIntervalMs);
 
-	private void logVolunteerCount() {
-		LOG.info("Number of connected volunteers: {}",
-				getNumberOfConnectedVolunteers());
-	}
+    }
 
-	private long generateIdForVolunteer(){
-		return secureRandom.nextLong();
-	}
+    public int getNumberOfConnectedVolunteers() {
+        return connectedVolunteerToLastHeartbeatTime.size();
+    }
+
+    private void disconnectIfNoHeartbeat() {
+        long currentTime = System.currentTimeMillis();
+        List<Long> disconnectedVolunteers = connectedVolunteerToLastHeartbeatTime
+                .entrySet()
+                .stream()
+                .filter(
+                        entry -> (currentTime - entry.getValue()) > heartbeatTimeoutMs)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+        disconnectedVolunteers.forEach(connectedVolunteerToLastHeartbeatTime::remove);
+        disconnectedVolunteers.forEach(id -> LOG.info("Volunteer with id {} disconnected (no heartbeat)", id));
+        disconnectedVolunteers.forEach(executionDao::timeoutExecutionForVolunteer);
+    }
+
+    private void logVolunteerCount() {
+        LOG.info("Number of connected volunteers: {}",
+                getNumberOfConnectedVolunteers());
+    }
+
+    private long generateIdForVolunteer() {
+        return secureRandom.nextLong();
+    }
 }

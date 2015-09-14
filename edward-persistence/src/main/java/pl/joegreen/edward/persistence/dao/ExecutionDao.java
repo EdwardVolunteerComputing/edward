@@ -76,4 +76,12 @@ public class ExecutionDao extends EdwardDao<Execution, ExecutionsRecord> {
 				.where(Tables.EXECUTIONS.ID.in(executionsToTimeoutIds))
 				.execute();
 	}
+
+	public void timeoutExecutionForVolunteer(long volunteerId){
+		dslContext.update(Tables.EXECUTIONS)
+				.set(Tables.EXECUTIONS.STATUS, ExecutionStatus.TIMEOUT.name())
+				.where(Tables.EXECUTIONS.VOLUNTEER_ID.eq(volunteerId)
+				.and(Tables.EXECUTIONS.STATUS.eq(ExecutionStatus.CREATED.toString())))
+				.execute();
+	}
 }
