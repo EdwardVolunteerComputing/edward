@@ -39,29 +39,25 @@ public class VolunteerRestController extends RestControllerBase {
 	@ResponseBody
 	public void sendExecutionError(@PathVariable Long executionId,
 			@RequestBody String error) {
-		logger.info(String.format("Execution %d finished with error",
-				executionId));
+		logger.info(String.format("Execution %d finished with error",executionId));
 		executionManagerService.saveExecutionError(executionId, error);
 	}
 
-	@RequestMapping(value = "getNextTask/{volunteerFingerprint}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "getNextTask/{volunteerId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public ClientExecutionInfo getExecution(
-			@PathVariable long volunteerFingerprint, HttpServletRequest request)
+			@PathVariable long volunteerId, HttpServletRequest request)
 			throws NoTaskForClientException {
 		String remoteAddress = request.getRemoteAddr();
-		long volunteerId = mixVolunteerFingerprintWithAddress(
-				volunteerFingerprint, remoteAddress);
 
 		logger.info(String.format(
-				"Volunteer(fp: %d, address: %s, id: %d) asks for task",
-				volunteerFingerprint, remoteAddress, volunteerId));
+				"Volunteer(address: %s, id: %d) asks for task", remoteAddress, volunteerId));
 		ClientExecutionInfo executionInfo = executionManagerService
 				.createNextExecutionForClient(volunteerId);
 		if (executionInfo != null) {
 			logger.info(String.format(
-					"Volunteer(fp: %d, address: %s, id: %d) starts %d",
-					volunteerFingerprint, remoteAddress, volunteerId,
+					"Volunteer(address: %s, id: %d) starts %d",
+					remoteAddress, volunteerId,
 					executionInfo.getExecutionId()));
 			return executionInfo;
 		} else {
@@ -69,37 +65,25 @@ public class VolunteerRestController extends RestControllerBase {
 		}
 	}
 
-	@RequestMapping(value = "register/{volunteerFingerprint}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "register", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public VolunteerRegistrationResponse register(
-			@PathVariable long volunteerFingerprint, HttpServletRequest request) {
+	public VolunteerRegistrationResponse register(HttpServletRequest request) {
 		String remoteAddress = request.getRemoteAddr();
-		long volunteerId = mixVolunteerFingerprintWithAddress(
-				volunteerFingerprint, remoteAddress);
-
 		logger.info(String.format(
-				"Volunteer(fp: %d, address: %s, id: %d) registers",
-				volunteerFingerprint, remoteAddress, volunteerId));
-		return volunteerManagerService.handleRegistration(volunteerId);
+				"Volunteer with address %s registers", remoteAddress));
+		return volunteerManagerService.handleRegistration();
 	}
 
-	@RequestMapping(value = "heartbeat/{volunteerFingerprint}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "heartbeat/{volunteerId}", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public void heartbeat(@PathVariable long volunteerFingerprint,
+	public void heartbeat(@PathVariable long volunteerId,
 			HttpServletRequest request) {
 		String remoteAddress = request.getRemoteAddr();
-		long volunteerId = mixVolunteerFingerprintWithAddress(
-				volunteerFingerprint, remoteAddress);
 
 		logger.debug(String.format(
-				"Volunteer(fp: %d, address: %s, id: %d) heartbeats",
-				volunteerFingerprint, remoteAddress, volunteerId));
+				"Volunteer(address: %s, id: %d) heartbeats",
+				remoteAddress, volunteerId));
 		volunteerManagerService.handleHeartbeat(volunteerId);
-	}
-
-	private long mixVolunteerFingerprintWithAddress(long volunteerFingerprint,
-			String remoteAddr) {
-		return (String.valueOf(volunteerFingerprint) + remoteAddr).hashCode();
 	}
 
 	@RequestMapping(value = "getCode/{jobId}", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)

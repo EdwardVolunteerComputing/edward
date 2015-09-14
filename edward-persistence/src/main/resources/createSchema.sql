@@ -47,7 +47,7 @@ create table tasks(
 
 
 create table volunteers(
-	id bigint auto_increment primary key
+	id bigint primary key
 );
 
 -- default volunteer 

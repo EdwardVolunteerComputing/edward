@@ -1,5 +1,7 @@
 package pl.joegreen.edward.management.service;
 
+import java.security.SecureRandom;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -24,6 +26,7 @@ public class VolunteerManagerService {
 	private final static long VOLUNTEER_COUNT_LOG_INTERVAL_MS = 20000L;
 	private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(
 			1);
+	private SecureRandom secureRandom = new SecureRandom();
 
 	@Autowired
 	private VolunteerDao volunteerDao;
@@ -45,10 +48,11 @@ public class VolunteerManagerService {
 				System.currentTimeMillis());
 	}
 
-	public VolunteerRegistrationResponse handleRegistration(long volunteerId) {
-		volunteerDao.addIfNotExist(volunteerId);
+	public VolunteerRegistrationResponse handleRegistration() {
+		long id = generateIdForVolunteer();
+		volunteerDao.addIfNotExist(id);
 		return new VolunteerRegistrationResponse(
-				VOLUNTEER_HEARTBEAT_INTERVAL_MS);
+				id, VOLUNTEER_HEARTBEAT_INTERVAL_MS);
 
 	}
 
@@ -76,5 +80,9 @@ public class VolunteerManagerService {
 	private void logVolunteerCount() {
 		LOG.info("Number of connected volunteers: {}",
 				getNumberOfConnectedVolunteers());
+	}
+
+	private long generateIdForVolunteer(){
+		return secureRandom.nextLong();
 	}
 }

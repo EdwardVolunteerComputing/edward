@@ -1,11 +1,7 @@
 (function edward() {
     var workerWrapper = new WorkerWrapper();
     var baseApiUrl = "../api/volunteer";
-
-    var volunteerFingerprint = new Fingerprint().get();
-
-    console.log("Volunteer fingerprint: " + volunteerFingerprint);
-
+    var volunteerId;
 
     function jobIdToFunctionName(jobId) {
         return "job" + jobId;
@@ -33,7 +29,7 @@
 
 
     function processNextTask() {
-        $.getJSON(baseApiUrl+"/getNextTask/" + volunteerFingerprint, function (result) {
+        $.getJSON(baseApiUrl+"/getNextTask/" + volunteerId, function (result) {
             if (!result.inputData) {
                 console.log("No tasks received from server.");
                 scheduleProcessing(false);
@@ -78,11 +74,12 @@
         console.log("Registering on server");
         $.ajax({
             type:"POST",
-            url:baseApiUrl+"/register/"+volunteerFingerprint
+            url:baseApiUrl+"/register"
         }).done(handleRegistrationResponse);
     }
 
     function handleRegistrationResponse(registrationResponse){
+        volunteerId = registrationResponse.volunteerId;
         window.setInterval(sendHeartbeatToServer, registrationResponse.heartbeatIntervalMs);
         scheduleProcessing(true);
     }
@@ -90,7 +87,7 @@
     function sendHeartbeatToServer(){
         $.ajax({
             type:"POST",
-            url:baseApiUrl+"/heartbeat/"+volunteerFingerprint
+            url:baseApiUrl+"/heartbeat/"+volunteerId
         })
     }
 
