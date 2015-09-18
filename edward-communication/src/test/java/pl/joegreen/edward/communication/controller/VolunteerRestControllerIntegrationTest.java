@@ -13,6 +13,8 @@ import pl.joegreen.edward.core.model.communication.ClientExecutionInfo;
 import pl.joegreen.edward.core.model.communication.VolunteerRegistrationResponse;
 import pl.joegreen.edward.persistence.dao.InvalidObjectException;
 
+import java.util.concurrent.TimeUnit;
+
 public class VolunteerRestControllerIntegrationTest extends
 		RestControllerTestBase {
 
@@ -93,11 +95,11 @@ public class VolunteerRestControllerIntegrationTest extends
 		String tasksData = "["+ dataPart + "]";
 		mockMvc.perform(post(addBatchUrl).contentType(JSON).content(tasksData))
 				.andExpect(OK);
+		Thread.sleep(2 * configurationProvider.getValueAsLong(Parameter.TASK_REFRESH_INTERVAL_MS));
 
 		String registrationResponseContent = mockMvc.perform(post(VOLUNTEER_API_URL_BASE
 				+ "/register")).andExpect(OK).andReturn().getResponse().getContentAsString();
 		VolunteerRegistrationResponse volunteerRegistrationResponse = mapper.readValue(registrationResponseContent, VolunteerRegistrationResponse.class);
-
 		String actualTask = performGetAndReturnContent(VOLUNTEER_API_URL_BASE
 				+ "/getNextTask/"
 				+ volunteerRegistrationResponse.getVolunteerId());

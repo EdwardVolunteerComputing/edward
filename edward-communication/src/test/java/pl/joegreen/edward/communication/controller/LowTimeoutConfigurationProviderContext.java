@@ -20,7 +20,7 @@ public class LowTimeoutConfigurationProviderContext {
 
 			@Override
 			public long getValueAsLong(Parameter parameter) {
-				return 100;
+				return 300;
 			}
 		};
 	}

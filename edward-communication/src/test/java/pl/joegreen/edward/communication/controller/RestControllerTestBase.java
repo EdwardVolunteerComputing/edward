@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import pl.joegreen.edward.communication.configuration.SpringServletContextConfig;
+import pl.joegreen.edward.core.configuration.ConfigurationProvider;
 import pl.joegreen.edward.persistence.configuration.PersistenceContextConfiguration;
 import pl.joegreen.edward.persistence.configuration.ProductionDataSourceConfig;
 import pl.joegreen.edward.persistence.configuration.TestDataSourceConfig;
@@ -70,6 +71,9 @@ public class RestControllerTestBase {
 
 	@Autowired
 	protected ModelFixtures modelFixtures;
+
+	@Autowired
+	protected ConfigurationProvider configurationProvider;
 
 	@Autowired
 	private DataSource dataSource;
