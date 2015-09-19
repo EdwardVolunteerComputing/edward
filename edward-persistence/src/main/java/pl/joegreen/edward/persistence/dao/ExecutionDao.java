@@ -1,5 +1,6 @@
 package pl.joegreen.edward.persistence.dao;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.jooq.Condition;
@@ -82,6 +83,14 @@ public class ExecutionDao extends EdwardDao<Execution, ExecutionsRecord> {
 				.set(Tables.EXECUTIONS.STATUS, ExecutionStatus.TIMEOUT.name())
 				.where(Tables.EXECUTIONS.VOLUNTEER_ID.eq(volunteerId)
 				.and(Tables.EXECUTIONS.STATUS.eq(ExecutionStatus.CREATED.toString())))
+				.execute();
+	}
+
+	public void timeoutExecutionsForNotConnectedVolunteers(Collection<Long> connectedVolunteers){
+		dslContext.update(Tables.EXECUTIONS)
+				.set(Tables.EXECUTIONS.STATUS, ExecutionStatus.TIMEOUT.name())
+				.where(Tables.EXECUTIONS.VOLUNTEER_ID.notIn(connectedVolunteers)
+						.and(Tables.EXECUTIONS.STATUS.eq(ExecutionStatus.CREATED.toString())))
 				.execute();
 	}
 }

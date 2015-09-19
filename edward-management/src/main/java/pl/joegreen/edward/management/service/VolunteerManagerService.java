@@ -29,6 +29,7 @@ public class VolunteerManagerService {
             .getLogger(VolunteerManagerService.class);
     private long heartbeatTimeoutMs;
     private long heartbeatIntervalMs;
+    private long executionExecutorCheckIntervalMs;
 
     private final static long VOLUNTEER_COUNT_LOG_INTERVAL_MS = 20000L;
     private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(
@@ -48,19 +49,26 @@ public class VolunteerManagerService {
     private void initialize() {
         heartbeatIntervalMs = configurationProvider.getValueAsLong(Parameter.VOLUNTEER_HEARTBEAT_INTERVAL_MS);
         heartbeatTimeoutMs = heartbeatIntervalMs * 2;
+        executionExecutorCheckIntervalMs = configurationProvider.getValueAsLong(Parameter.EXECUTIONS_EXECUTOR_CHECK_INTERVAL_MS);
+
         executor.scheduleAtFixedRate(this::disconnectIfNoHeartbeat,
                 heartbeatIntervalMs, heartbeatIntervalMs,
                 TimeUnit.MILLISECONDS);
         executor.scheduleAtFixedRate(this::logVolunteerCount,
                 VOLUNTEER_COUNT_LOG_INTERVAL_MS,
                 VOLUNTEER_COUNT_LOG_INTERVAL_MS, TimeUnit.MILLISECONDS);
+        executor.scheduleAtFixedRate(this::timeoutExecutionsForDisconnectedVolunteers, executionExecutorCheckIntervalMs,
+                executionExecutorCheckIntervalMs, TimeUnit.MILLISECONDS);
     }
 
     private final ConcurrentHashMap<Long, Long> connectedVolunteerToLastHeartbeatTime = new ConcurrentHashMap<>();
 
     public void handleHeartbeat(long volunteerId) {
-        connectedVolunteerToLastHeartbeatTime.put(volunteerId,
+        Long previousTimestamp = connectedVolunteerToLastHeartbeatTime.put(volunteerId,
                 System.currentTimeMillis());
+        if(previousTimestamp==null){
+            LOG.info("First heartbeat from volunteer with id {}", volunteerId);
+        }
     }
 
     public VolunteerRegistrationResponse handleRegistration() {
@@ -70,6 +78,12 @@ public class VolunteerManagerService {
         return new VolunteerRegistrationResponse(
                 id, heartbeatIntervalMs);
 
+    }
+
+
+
+    public void handleTaskRequestHeartbeat(long volunteerId){
+        handleHeartbeat(volunteerId);
     }
 
     public int getNumberOfConnectedVolunteers() {
@@ -88,6 +102,10 @@ public class VolunteerManagerService {
         disconnectedVolunteers.forEach(connectedVolunteerToLastHeartbeatTime::remove);
         disconnectedVolunteers.forEach(id -> LOG.info("Volunteer with id {} disconnected (no heartbeat)", id));
         disconnectedVolunteers.forEach(executionDao::timeoutExecutionForVolunteer);
+    }
+
+    private void timeoutExecutionsForDisconnectedVolunteers(){
+        executionDao.timeoutExecutionsForNotConnectedVolunteers(connectedVolunteerToLastHeartbeatTime.keySet());
     }
 
     private void logVolunteerCount() {

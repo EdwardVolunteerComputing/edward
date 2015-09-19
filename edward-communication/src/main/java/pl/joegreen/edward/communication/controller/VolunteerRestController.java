@@ -54,6 +54,7 @@ public class VolunteerRestController extends RestControllerBase {
 				"Volunteer(address: %s, id: %d) asks for task", remoteAddress, volunteerId));
 		ClientExecutionInfo executionInfo = executionManagerService
 				.createNextExecutionForClient(volunteerId);
+		volunteerManagerService.handleTaskRequestHeartbeat(volunteerId);
 		if (executionInfo != null) {
 			logger.info(String.format(
 					"Volunteer(address: %s, id: %d) starts %d",

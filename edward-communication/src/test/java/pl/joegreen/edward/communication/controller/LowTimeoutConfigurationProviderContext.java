@@ -20,6 +20,9 @@ public class LowTimeoutConfigurationProviderContext {
 
 			@Override
 			public long getValueAsLong(Parameter parameter) {
+				if(parameter==Parameter.EXECUTIONS_EXECUTOR_CHECK_INTERVAL_MS){
+					return 1200;
+				}
 				return 300;
 			}
 		};
