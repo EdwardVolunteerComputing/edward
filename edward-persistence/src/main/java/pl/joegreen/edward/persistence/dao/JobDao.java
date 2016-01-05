@@ -47,9 +47,11 @@ public class JobDao extends EdwardDao<Job, JobsRecord> {
 	}
 
 	public List<Job> getJobsByProjectId(Long projectId) {
-		return getByQuery(dslContext.select().from(Tables.JOBS)
-				.where(Tables.JOBS.PROJECT_ID.eq(projectId)));
-
+		return getByQuery(
+				dslContext
+						.select()
+						.from(Tables.JOBS)
+						.where(Tables.JOBS.PROJECT_ID.eq(projectId)));
 	}
 
 	@Override
