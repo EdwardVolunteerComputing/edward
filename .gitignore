@@ -4,3 +4,6 @@
 target
 .idea
 generated
+*.iml
+*.releaseBackup
+release.properties
