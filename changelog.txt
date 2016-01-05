@@ -1,3 +1,9 @@
+0.6 
+- volunteer's executions are now set to TIMEOUT state if volunteer disconnects 
+- using server-side generated volunteer ID 
+- persisting Execution completion time 
+- faster JSON validation in JsonDataDao 
+
 0.5
 - fixed bug that sometimes caused many volunteers to get the same task even if concurrency level was set to 1
 
