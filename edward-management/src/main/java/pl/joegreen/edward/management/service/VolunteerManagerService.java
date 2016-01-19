@@ -1,26 +1,23 @@
 package pl.joegreen.edward.management.service;
 
-import java.security.SecureRandom;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import pl.joegreen.edward.core.configuration.ConfigurationProvider;
 import pl.joegreen.edward.core.configuration.Parameter;
 import pl.joegreen.edward.core.model.communication.VolunteerRegistrationResponse;
 import pl.joegreen.edward.persistence.dao.ExecutionDao;
 import pl.joegreen.edward.persistence.dao.VolunteerDao;
+
+import javax.annotation.PostConstruct;
+import java.security.SecureRandom;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Component
 public class VolunteerManagerService {
@@ -66,13 +63,14 @@ public class VolunteerManagerService {
     public void handleHeartbeat(long volunteerId) {
         Long previousTimestamp = connectedVolunteerToLastHeartbeatTime.put(volunteerId,
                 System.currentTimeMillis());
-        if(previousTimestamp==null){
+        if (previousTimestamp == null) {
             LOG.info("First heartbeat from volunteer with id {}", volunteerId);
         }
     }
 
     public VolunteerRegistrationResponse handleRegistration() {
         long id = generateIdForVolunteer();
+        LOG.info("Registering volunteer with id {}", id);
         volunteerDao.addIfNotExist(id);
         handleHeartbeat(id);
         return new VolunteerRegistrationResponse(
@@ -81,8 +79,7 @@ public class VolunteerManagerService {
     }
 
 
-
-    public void handleTaskRequestHeartbeat(long volunteerId){
+    public void handleTaskRequestHeartbeat(long volunteerId) {
         handleHeartbeat(volunteerId);
     }
 
@@ -104,7 +101,7 @@ public class VolunteerManagerService {
         disconnectedVolunteers.forEach(executionDao::timeoutExecutionForVolunteer);
     }
 
-    private void timeoutExecutionsForDisconnectedVolunteers(){
+    private void timeoutExecutionsForDisconnectedVolunteers() {
         executionDao.timeoutExecutionsForNotConnectedVolunteers(connectedVolunteerToLastHeartbeatTime.keySet());
     }
 

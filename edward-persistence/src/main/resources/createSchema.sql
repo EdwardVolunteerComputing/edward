@@ -1,5 +1,12 @@
 drop all objects;
 
+create table edward_properties(
+    property varchar(255) primary key,
+    value varchar(255)
+);
+
+insert into edward_properties values('DB_SCHEMA_VERSION', '1');
+
 
 create table users(
 	id bigint auto_increment primary key,

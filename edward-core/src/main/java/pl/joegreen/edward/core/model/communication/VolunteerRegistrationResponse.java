@@ -3,19 +3,19 @@ package pl.joegreen.edward.core.model.communication;
 public class VolunteerRegistrationResponse {
 
 	private long heartbeatIntervalMs;
-	private long volunteerId;
+	private String volunteerId;
 
 	public long getHeartbeatIntervalMs() {
 		return heartbeatIntervalMs;
 	}
 
-	public long getVolunteerId() {
+	public String getVolunteerId() {
 		return volunteerId;
 	}
 
 	public VolunteerRegistrationResponse(long volunteerId, long heartbeatIntervalMs) {
 		this.heartbeatIntervalMs = heartbeatIntervalMs;
-		this.volunteerId = volunteerId;
+		this.volunteerId = String.valueOf(volunteerId);
 	}
 
 	private VolunteerRegistrationResponse(){}

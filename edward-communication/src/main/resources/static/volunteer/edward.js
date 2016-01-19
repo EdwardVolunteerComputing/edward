@@ -1,7 +1,7 @@
 (function edward() {
     var workerWrapper = new WorkerWrapper();
     var baseApiUrl = "../api/volunteer";
-    var volunteerId;
+    var volunteerId; // kept as a string on JS side as JS cannot handle Java longs
 
     function jobIdToFunctionName(jobId) {
         return "job" + jobId;
