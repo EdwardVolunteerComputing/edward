@@ -13,75 +13,41 @@ User can become a vounteer by simply opening volunteer page in his browser. The 
 UI is written in react.js but it was my first attempt to use react and the code is a real mess at the moment. Shell client is not up to date and currently doesn't work. The platform itself should work as well as volunteer code. Tagged released versions from git are the most stable and tested. 
 
 
-## Starting Edward 
-
-Distribution zip is generated in `edward-communication/target` and contains:
-* `edward.war` - webapplication archive that can be used in Tomcat 
-* `edward.mv.db` - H2 database file with initialized schema
-* `createSchema.sql` - SQL script that generates database schema
-* `defaultConfig.propertie` - properties file with default values 
-
-By default edward tries to connect to the H2 database using url: `jdbc:h2:tcp://localhost/~/edward` 
-with `admin/admin` credentials. That's why scripts below use user home directory to store database file with created schema. The url and credentials can be changed by setting `edward.config` java environment variable to the location of properties file with new values. Exemplary configuration file as well as a database file with initialized schema is provided in the distribution zip. To change environment variable in Tomcat `edward.config=pathToFile` should be added to
-`$TOMCAT_DIR/conf/catalina.properties`. 
-
-
-### Windows + Jetty 
-
-Running on Windows using embedded jetty. Assuming java8, maven, git are installed and available in `%PATH%` . Maven should be configured to use java8. H2 console (http://www.h2database.com/html/download.html) needs to be running as it is used as the database server. 
-```
+## Building Edward 
+```bash
 git clone https://github.com/greenjoe/edward.git
 cd edward
-mvn install -Dmaven.test.skip
-COPY edward-persistence\target\schemaForJooq.mv.db %userprofile%\edward.mv.db 
-mvn jetty:run -pl edward-communication
+mvn package
 ```
-Server webpage address: `http://localhost:8080/` 
+The executable JAR file will be generated in edward/edward-communication/edward-executable-${VERSION}.jar.
 
+## Starting Edward 
 
+Starting with default options is really simple:
+```bash
+java -jar edward-executable-VERSION.jar
+```
+It creates a file-based H2 database in the current working directory and starts the web server at http://localhost:8008. 
+Configuration can be passed using Java properties, for example to change the database file location to /tmp/edward.mv.db:
+```bash
+java -Djdbc.url="jdbc:h2:/tmp/edward" -jar edward-communication/target/edward-executable-${VERSION}.jar 
+```
+Full list of configurable properties can be found in the
+[Parameter.java](edward-core/src/main/java/pl/joegreen/edward/core/configuration/Parameter.java) class. 
 
-### Ubuntu + Jetty 
-Running on ubuntu using embedded jetty. Assuming java8, maven, git are installed and available in `$PATH`. Maven should be configured to use java8 (`$JAVA_HOME`).
+### Building and running on a fresh install of Amazon EC2 Ubuntu
 
 ```bash
-cd ~
-git clone https://github.com/greenjoe/edward.git
-wget http://www.h2database.com/h2-2015-04-10.zip
-unzip h2-2015-04-10.zip
-chmod +x h2/bin/h2.sh
-~/h2/bin/h2.sh &
-cd edward 
-mvn package -D maven.test.skip
-cp edward-persistence/target/schemaForJooq.mv.db ~/edward.mv.db
-mvn jetty:run -pl edward-communication
-```
-Server webpage address: `http://localhost:8080/` 
-
-
-
-### Ubuntu (fresh install) + Tomcat 
-
-Script to run the platform using Tomcat on a fresh ubuntu instance from Amazon: 
-```bash
+export VERSION=0.7-SNAPSHOT
 echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
 sudo add-apt-repository -y ppa:webupd8team/java
 sudo apt-get update
 sudo apt-get -y install oracle-java8-installer
-sudo apt-get -y install maven tomcat7 git
-echo "JAVA_HOME=/usr/lib/jvm/java-8-oracle/" >> tomcat7
-cat /etc/default/tomcat7 >> tomcat7
-sudo mv tomcat7 /etc/default/tomcat7
-wget http://www.h2database.com/h2-2015-04-10.zip
-unzip *.zip
-chmod +x h2/bin/h2.sh
+sudo apt-get -y install maven git
 sudo iptables -I INPUT -p tcp --dport 8080 -j ACCEPT
-sudo service tomcat7 stop
 cd ~
 git clone https://github.com/greenjoe/edward.git
 cd edward
 mvn package
-sudo cp edward-communication/target/*.war /var/lib/tomcat7/webapps/edward.war
-sudo cp edward-persistence/target/schemaForJooq.mv.db ~/edward.mv.db
-sudo chown ubuntu:ubuntu ~/edward.mv.db 
+java -jar edward-communication/target/edward-executable-${VERSION}.jar
 ```
-Server webpage address: `http://localhost:8080/edward/`  (final slash is unfortunately important, without it styles and scripts don't load). 
