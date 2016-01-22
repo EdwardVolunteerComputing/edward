@@ -94,6 +94,7 @@
                         </goals>
                         <configuration>
                             <mainClass>pl.joegreen.edward.communication.Start</mainClass>
+                            <finalName>edward-executable-${project.version}</finalName>
                         </configuration>
                     </execution>
                 </executions>
