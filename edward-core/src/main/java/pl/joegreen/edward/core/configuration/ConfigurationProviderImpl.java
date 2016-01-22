@@ -22,4 +22,9 @@ public class ConfigurationProviderImpl implements ConfigurationProvider {
     public long getValueAsLong(Parameter parameter) {
         return Long.valueOf(getValue(parameter));
     }
+
+    @Override
+    public int getValueAsInt(Parameter parameter) {
+        return Integer.valueOf(getValue(parameter));
+    }
 }
