@@ -42,6 +42,14 @@ var getNumberOfConnectedVolunteers = function(){
     });
 }
 
+var getVersion = function(){
+    return $.ajax({
+        type: "GET", url: BASE_API_URL + "version/", headers: {
+            "Authorization": "Basic " + btoa("admin" + ":" + "admin")
+        }
+    });
+}
+
 var refreshNumberOfConnectedVolunteers = function(){
     getNumberOfConnectedVolunteers().done(function(data){
         $("#connectedVolunteers").text(data);
@@ -51,7 +59,9 @@ var refreshNumberOfConnectedVolunteers = function(){
 
 window.setInterval(refreshNumberOfConnectedVolunteers, VOLUNTEER_COUNT_REFRESH_INTERVAL);
 refreshNumberOfConnectedVolunteers();
-
+getVersion().done(function(data){
+   $("#version").text(data);
+});
 
 var getJob = function (id) {
     return $.ajax({
