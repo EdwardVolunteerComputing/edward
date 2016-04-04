@@ -1,18 +1,17 @@
 package pl.joegreen.edward.persistence.dao;
 
-import java.util.Collection;
-import java.util.List;
-
 import org.jooq.Condition;
 import org.jooq.Record1;
 import org.jooq.SelectConditionStep;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Component;
-
 import pl.joegreen.edward.core.model.Execution;
 import pl.joegreen.edward.core.model.ExecutionStatus;
 import pl.joegreen.edward.persistence.generated.Tables;
 import pl.joegreen.edward.persistence.generated.tables.records.ExecutionsRecord;
+
+import java.util.Collection;
+import java.util.List;
 
 @Component
 public class ExecutionDao extends EdwardDao<Execution, ExecutionsRecord> {
@@ -59,7 +58,7 @@ public class ExecutionDao extends EdwardDao<Execution, ExecutionsRecord> {
 				.where(Tables.EXECUTIONS.TASK_ID.eq(taskId)));
 	}
 
-	public void updateTimeoutStates(long timeout) {
+	public void updateTimeoutStates() {
 		long currentTime = System.currentTimeMillis();
 		Condition timeCondition = Tables.EXECUTIONS.CREATION_TIME.lessThan(DSL
 				.val(currentTime).minus(Tables.TASKS.TIMEOUT));
