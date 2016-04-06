@@ -1,3 +1,8 @@
+0.7 
+- moving to Spring Boot runnable fat-jar instead of using war and Tomcat
+- configuration can be now passed by Java Properties (-Dproperty=value)
+- database file is created in the working directory by default
+
 0.6 
 - volunteer's executions are now set to TIMEOUT state if volunteer disconnects 
 - using server-side generated volunteer ID 
