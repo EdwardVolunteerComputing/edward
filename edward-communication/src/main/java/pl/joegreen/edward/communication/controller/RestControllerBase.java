@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import pl.joegreen.edward.communication.controller.exception.*;
+import pl.joegreen.edward.communication.services.LoggedUserNameProvider;
 import pl.joegreen.edward.communication.services.VersionProvider;
 import pl.joegreen.edward.core.model.IdentifierProvider;
 import pl.joegreen.edward.core.model.communication.IdContainer;
@@ -45,6 +46,12 @@ public class RestControllerBase {
 
     @Autowired
     protected VolunteerManagerService volunteerManagerService;
+
+    @Autowired
+    protected  UserDao userDao;
+
+    @Autowired
+    protected  LoggedUserNameProvider loggedUserNameProvider;
 
 
     @Autowired

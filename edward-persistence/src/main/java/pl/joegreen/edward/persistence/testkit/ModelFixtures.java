@@ -2,18 +2,8 @@ package pl.joegreen.edward.persistence.testkit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import pl.joegreen.edward.core.model.Job;
-import pl.joegreen.edward.core.model.JsonData;
-import pl.joegreen.edward.core.model.Project;
-import pl.joegreen.edward.core.model.Task;
-import pl.joegreen.edward.core.model.User;
-import pl.joegreen.edward.persistence.dao.InvalidObjectException;
-import pl.joegreen.edward.persistence.dao.JobDao;
-import pl.joegreen.edward.persistence.dao.JsonDataDao;
-import pl.joegreen.edward.persistence.dao.ProjectDao;
-import pl.joegreen.edward.persistence.dao.TaskDao;
-import pl.joegreen.edward.persistence.dao.UserDao;
+import pl.joegreen.edward.core.model.*;
+import pl.joegreen.edward.persistence.dao.*;
 
 @Component
 public class ModelFixtures {
@@ -38,16 +28,11 @@ public class ModelFixtures {
 		return user;
 	}
 
-	public User createAndPersistTestUser() throws InvalidObjectException {
-		User user = createTestUser();
-		userDao.insert(user);
-		return user;
-	}
 
 	public Project createTestProject() throws InvalidObjectException {
 		Project project = new Project();
 		project.setName(testName);
-		project.setOwnerId(createAndPersistTestUser().getId());
+		project.setOwnerId(1L);
 		return project;
 	}
 

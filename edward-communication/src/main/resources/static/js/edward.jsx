@@ -10,10 +10,7 @@ var VOLUNTEER_COUNT_REFRESH_INTERVAL = 5000;
 
 var PAGES = {
     ALL: 0, PROJECT: 1, JOB: 2, TASK: 3, EXECUTION: 4
-}
-
-
-var BASE_API_URL = "api/internal/"
+};
 
 function createCodeMirror(parentNode, selector, options) {
     var lastEditor = null;
@@ -23,31 +20,6 @@ function createCodeMirror(parentNode, selector, options) {
             {readOnly: !options.isEditable, lineNumbers: true, mode: {name: "javascript", json: options.isJson}})
     });
     return lastEditor;
-}
-
-
-var getProject = function (id) {
-    return $.ajax({
-        type: "GET", url: BASE_API_URL + "project/" + id, dataType: 'json', headers: {
-            "Authorization": "Basic " + btoa("admin" + ":" + "admin")
-        }
-    })
-}
-
-var getNumberOfConnectedVolunteers = function(){
-    return $.ajax({
-        type: "GET", url: BASE_API_URL + "volunteerCount/", headers: {
-            "Authorization": "Basic " + btoa("admin" + ":" + "admin")
-        }
-    });
-}
-
-var getVersion = function(){
-    return $.ajax({
-        type: "GET", url: BASE_API_URL + "version/", headers: {
-            "Authorization": "Basic " + btoa("admin" + ":" + "admin")
-        }
-    });
 }
 
 var refreshNumberOfConnectedVolunteers = function(){
@@ -63,104 +35,6 @@ getVersion().done(function(data){
    $("#version").text(data);
 });
 
-var getJob = function (id) {
-    return $.ajax({
-        type: "GET", url: BASE_API_URL + "job/" + id, dataType: 'json', headers: {
-            "Authorization": "Basic " + btoa("admin" + ":" + "admin")
-        }
-    })
-}
-
-
-var getTask = function (id) {
-    return $.ajax({
-        type: "GET", url: BASE_API_URL + "task/" + id, dataType: 'json', headers: {
-            "Authorization": "Basic " + btoa("admin" + ":" + "admin")
-        }
-    }).then(function (task) {
-        return $.ajax({
-            type: "GET", url: BASE_API_URL + "task/" + id + "/status", dataType: 'json', headers: {
-                "Authorization": "Basic " + btoa("admin" + ":" + "admin")
-            }
-        }).then(function (status) {
-            task.status = status;
-            return task;
-        })
-    })
-}
-
-
-var getExecution = function (id) {
-    return $.ajax({
-        type: "GET", url: BASE_API_URL + "execution/" + id, dataType: 'json', headers: {
-            "Authorization": "Basic " + btoa("admin" + ":" + "admin")
-        }
-    })
-}
-var getExecutionResult = function (id) {
-    return $.ajax({
-        type: "GET", url: BASE_API_URL + "execution/" + id + "/result", dataType: 'json', headers: {
-            "Authorization": "Basic " + btoa("admin" + ":" + "admin")
-        }
-    })
-}
-
-var getData = function (id) {
-    return $.ajax({
-        type: "GET", url: BASE_API_URL + "data/" + id, dataType: 'json', headers: {
-            "Authorization": "Basic " + btoa("admin" + ":" + "admin")
-        }
-    })
-}
-
-
-var getProjects = function () {
-    return $.ajax({
-        type: "GET", url: BASE_API_URL + "project", dataType: 'json', headers: {
-            "Authorization": "Basic " + btoa("admin" + ":" + "admin")
-        }
-    })
-}
-
-var putProject = function (project) {
-    return $.ajax({
-        type: "POST",
-        url: BASE_API_URL + "project",
-        dataType: 'json',
-        data: JSON.stringify(project),
-        contentType: 'application/json',
-        headers: {
-            "Authorization": "Basic " + btoa("admin" + ":" + "admin")
-        }
-    })
-}
-
-
-var putJob = function (job) {
-    return $.ajax({
-        type: "POST",
-        url: BASE_API_URL + "/job",
-        dataType: 'json',
-        data: JSON.stringify(job),
-        contentType: 'application/json',
-        headers: {
-            "Authorization": "Basic " + btoa("admin" + ":" + "admin")
-        }
-    })
-}
-
-var putTasks = function (jobId, inputs, priority, concurrentExecutionsCount, timeout) {
-    return $.ajax({
-        type: "POST",
-        url: BASE_API_URL + "/job/" + jobId + '/tasks/' + priority + "/" + concurrentExecutionsCount + "/" + timeout,
-        dataType: 'json',
-        data: inputs,
-        contentType: 'application/json',
-        headers: {
-            "Authorization": "Basic " + btoa("admin" + ":" + "admin")
-        }
-    })
-}
 
 var Waiting = React.createClass({
     render: function () {

@@ -1,14 +1,6 @@
 package pl.joegreen.edward.rest.client;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
@@ -28,15 +20,13 @@ import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-
-import pl.joegreen.edward.core.model.Job;
-import pl.joegreen.edward.core.model.JsonData;
-import pl.joegreen.edward.core.model.Project;
-import pl.joegreen.edward.core.model.Task;
-import pl.joegreen.edward.core.model.TaskStatus;
+import pl.joegreen.edward.core.model.*;
 import pl.joegreen.edward.core.model.communication.IdContainer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class RestClient {
 	private String host;
@@ -71,13 +61,12 @@ public class RestClient {
 		}
 	}
 
-	public IdContainer addProject(String name, long userId)
+	public IdContainer addProject(String name)
 			throws RestException {
 		try { // TODO: how about using dynamicproxy to rethrow the exceptions
 				// instead of copyPaste?
 			Project project = new Project();
 			project.setName(name);
-			project.setOwnerId(userId);
 			String projectString = objectMapper.writeValueAsString(project);
 			HttpPost post = createJsonPost(getBaseUrl() + "/project",
 					projectString);

@@ -1,26 +1,23 @@
 package pl.joegreen.edward.communication.controller;
 
-import static org.junit.Assert.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.junit.Test;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
+import pl.joegreen.edward.core.model.*;
+import pl.joegreen.edward.core.model.communication.IdContainer;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.ResultMatcher;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
-import pl.joegreen.edward.core.model.Execution;
-import pl.joegreen.edward.core.model.Job;
-import pl.joegreen.edward.core.model.JsonData;
-import pl.joegreen.edward.core.model.Project;
-import pl.joegreen.edward.core.model.Task;
-import pl.joegreen.edward.core.model.communication.IdContainer;
-
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
+@WithMockUser(username = "admin")
 public class InternalRestControllerIntegrationTest extends
 		RestControllerTestBase {
 
@@ -233,8 +230,7 @@ public class InternalRestControllerIntegrationTest extends
 		JsonNodeFactory factory = JsonNodeFactory.instance;
 		ObjectNode projectContentJson = factory.objectNode();
 		projectContentJson.put("name", "projectName");
-		projectContentJson.put("ownerId", modelFixtures
-				.createAndPersistTestUser().getId());
+		projectContentJson.put("ownerId", 1L);
 
 		mockMvc.perform(
 				post(PROJECT_URL).contentType(JSON).content(

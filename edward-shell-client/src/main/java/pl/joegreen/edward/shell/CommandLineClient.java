@@ -1,21 +1,14 @@
 package pl.joegreen.edward.shell;
 
-import java.io.File;
-import java.io.IOException;
-
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
-import net.sourceforge.argparse4j.inf.ArgumentParser;
-import net.sourceforge.argparse4j.inf.ArgumentParserException;
-import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
-import net.sourceforge.argparse4j.inf.Namespace;
-import net.sourceforge.argparse4j.inf.Subparser;
-import net.sourceforge.argparse4j.inf.Subparsers;
-
+import net.sourceforge.argparse4j.inf.*;
 import org.apache.commons.io.FileUtils;
-
 import pl.joegreen.edward.rest.client.RestClient;
 import pl.joegreen.edward.rest.client.RestException;
+
+import java.io.File;
+import java.io.IOException;
 
 public class CommandLineClient {
 
@@ -46,7 +39,7 @@ public class CommandLineClient {
 
 	private enum Parameter {
 		CODE_FILE("codeFile", "cf"), CODE("code", "c"), PROJECT_ID("projectId",
-				"pid"), USER_ID("userId", "uid"), NAME("name", "n"), JOB_ID(
+				"pid"), NAME("name", "n"), JOB_ID(
 				"jobId", "jid"), DATA("data", "d"), DATA_FILE("dataFile", "df"), TASK_ID(
 				"taskId", "tid"), TASK_PRIORITY("priority", "p"), TASK_CONCURRENT_EXECUTIONS(
 				"concurrentExecutions", "ce"), TASK_TIMEOUT("timeout", "to");
@@ -88,8 +81,6 @@ public class CommandLineClient {
 
 		Subparser projectAddParser = subparsers.addParser(Command.PROJECT_ADD);
 		addNameArgument(projectAddParser);
-		projectAddParser.addArgument(Parameter.USER_ID.getParserArguments())
-				.required(true).type(Long.class);
 
 		Subparser jobAddParser = subparsers.addParser(Command.JOB_ADD);
 		addNameArgument(jobAddParser);
@@ -179,8 +170,7 @@ public class CommandLineClient {
 	private void addProject(Namespace parsedArguments) throws RestException {
 		String projectName = parsedArguments.getString(Parameter.NAME
 				.getLongName());
-		Long userId = parsedArguments.getLong(Parameter.USER_ID.getLongName());
-		printResult(restClient.addProject(projectName, userId));
+		printResult(restClient.addProject(projectName));
 	}
 
 	private void addJob(Namespace parsedArguments) throws RestException,

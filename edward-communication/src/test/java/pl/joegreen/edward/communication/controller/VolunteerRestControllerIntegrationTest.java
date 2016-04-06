@@ -1,20 +1,17 @@
 package pl.joegreen.edward.communication.controller;
 
-import static org.junit.Assert.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-
 import org.junit.Test;
-
-import org.springframework.test.context.ContextConfiguration;
-import pl.joegreen.edward.core.configuration.ConfigurationProvider;
+import org.springframework.security.test.context.support.WithMockUser;
 import pl.joegreen.edward.core.configuration.Parameter;
 import pl.joegreen.edward.core.model.Job;
 import pl.joegreen.edward.core.model.communication.ClientExecutionInfo;
 import pl.joegreen.edward.core.model.communication.VolunteerRegistrationResponse;
-import pl.joegreen.edward.persistence.dao.InvalidObjectException;
 
-import java.util.concurrent.TimeUnit;
+import static org.junit.Assert.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
+@WithMockUser(username = "admin")
 public class VolunteerRestControllerIntegrationTest extends
 		RestControllerTestBase {
 

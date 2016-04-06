@@ -1,31 +1,20 @@
 package pl.joegreen.edward.communication.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+import pl.joegreen.edward.communication.controller.exception.InsertInvalidDataException;
+import pl.joegreen.edward.core.model.*;
+import pl.joegreen.edward.core.model.communication.IdContainer;
+import pl.joegreen.edward.persistence.dao.InvalidObjectException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-
-import pl.joegreen.edward.communication.controller.exception.InsertInvalidDataException;
-import pl.joegreen.edward.core.model.Execution;
-import pl.joegreen.edward.core.model.Job;
-import pl.joegreen.edward.core.model.JsonData;
-import pl.joegreen.edward.core.model.Project;
-import pl.joegreen.edward.core.model.Task;
-import pl.joegreen.edward.core.model.TaskStatus;
-import pl.joegreen.edward.core.model.communication.IdContainer;
-import pl.joegreen.edward.persistence.dao.InvalidObjectException;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 
 @Controller
 @RequestMapping("/api/internal/")
@@ -133,6 +122,8 @@ public class InternalRestController extends RestControllerBase {
 	@RequestMapping(value = "project", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public @ResponseBody IdContainer insertOrUpdateProject(
 			@RequestBody Project project) {
+		User user = userDao.getByName(loggedUserNameProvider.getLoggedUserName());
+		project.setOwnerId(user.getId());
 		return insertOrUpdate(project, projectDao);
 	}
 
