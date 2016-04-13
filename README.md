@@ -27,7 +27,7 @@ Starting with default options is really simple:
 ```bash
 java -jar edward-executable-VERSION.jar
 ```
-It creates a file-based H2 database in the current working directory and starts the web server at http://localhost:8008. 
+It creates a file-based H2 database in the current working directory and starts the web server at http://localhost:8080. 
 Configuration can be passed using Java properties, for example to change the database file location to /tmp/edward.mv.db:
 ```bash
 java -Djdbc.url="jdbc:h2:/tmp/edward" -jar edward-communication/target/edward-executable-${VERSION}.jar 
