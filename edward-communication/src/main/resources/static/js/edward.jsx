@@ -159,7 +159,6 @@ var tasksListRenderItem = function (item, props) {
                 projectId: props.params.projectId, jobId: item.jobId, taskId: item.id
             }}>&#35;{item.id}</Link>
         </td>
-        <td>{item.priority}</td>
     </tr>);
 }
 
